@@ -28,3 +28,4 @@ This audit examines the existing authentication implementation in **KAJLAGBE (рж
 2. **Session Persistence**: `@supabase/ssr` cookies correctly synchronize sessions between Next.js SSR, client components, and API routes.
 3. **Database Profile Synchronization**: Database schema has `User`, `UserProfile`, `CustomerProfile`, `ProviderProfile`, `BusinessProfile` models. Automatic synchronization ensures every authenticated Supabase user has a corresponding application database record.
 4. **Role System**: Supported roles: `CUSTOMER`, `INDIVIDUAL_PROVIDER`, `BUSINESS`, `ADMIN`, `SUPER_ADMIN`.
+

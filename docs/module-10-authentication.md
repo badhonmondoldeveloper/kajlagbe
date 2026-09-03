@@ -45,3 +45,4 @@ PostgreSQL Application User (prisma.user)
 
 ### 5. Dedicated Account Portal (`/account`)
 - Profile details management, Security controls (password change, verification badges), Onboarding state, and secure logout.
+

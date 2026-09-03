@@ -16,3 +16,4 @@
 ## 3. Local Development Security
 - [x] `.env.example` contains non-sensitive placeholders.
 - [x] `.gitignore` includes `.env`, `.env.local`, `.env.production`.
+

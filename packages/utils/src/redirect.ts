@@ -24,3 +24,4 @@ export function sanitizeRedirectPath(path?: string | null, fallback = '/dashboar
 
   return fallback;
 }
+
