@@ -165,7 +165,7 @@ export function Footer() {
           <div className="mt-3 sm:mt-0 flex items-center space-x-4">
             <Link href="/safety" className="hover:underline">শর্তাবলী ও গোপনীয়তা</Link>
             <span>•</span>
-            <span className="text-emerald-600 font-semibold">Module 03: Premium Public Website</span>
+            <span className="text-emerald-600 font-semibold">বাংলাদেশের বিশ্বস্ত সেবা মাধ্যম</span>
           </div>
         </div>
       </div>
