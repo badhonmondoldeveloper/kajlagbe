@@ -87,3 +87,4 @@ This document presents an authoritative audit of the actual database architectur
 21. `PaymentMethod`: `ONLINE_BKASH`, `ONLINE_NAGAD`, `ONLINE_CARD`, `BANK_TRANSFER`, `CASH_AFTER_SERVICE`
 22. `LedgerEntryType`: `CREDIT`, `DEBIT`, `COMMISSION`, `REFUND`, `PAYOUT`, `ADJUSTMENT`
 23. `PayoutStatus`: `PENDING`, `APPROVED`, `PROCESSING`, `PAID`, `REJECTED`
+
