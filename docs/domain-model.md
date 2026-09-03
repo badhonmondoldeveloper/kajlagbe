@@ -1,70 +1,55 @@
-# KajLagbe Domain Model Specification
+# KajLagbe Domain Model & Boundaries Specification
 
 ## Domain Overview
-The **KAJLAGBE (কাজ লাগবে)** marketplace architecture is organized into 15 distinct domain boundaries. Each domain encapsulates its specific business rules, invariants, status state machines, and cross-domain events.
+The **KAJLAGBE (কাজ লাগবে)** marketplace architecture is organized into 22 distinct domain boundaries mapped to the 46 Prisma PostgreSQL models and NestJS API services.
 
 ---
 
-## 15 Key Domain Boundaries
+## 22 Domain Boundaries & Implementation Matrix
+
+| # | Domain Boundary | Primary Entities | Current Status | Target Module |
+| :- | :--- | :--- | :--- | :--- |
+| 1 | **Users & Identity** | `User` | `IMPLEMENTED` | Module 10 |
+| 2 | **Profiles & KYC** | `UserProfile`, `CustomerProfile`, `ProviderProfile`, `BusinessProfile` | `IMPLEMENTED` | Module 10 / 13 |
+| 3 | **Roles & Permissions** | `Role`, `Permission`, `UserRole`, `RolePermission` | `IMPLEMENTED` | Module 10 / 11 |
+| 4 | **Service Categories** | `ProviderService`, `BusinessService` | `IMPLEMENTED` | Module 11 |
+| 5 | **Subservices** | Category & service JSON metadata | `PARTIALLY_IMPLEMENTED` | Module 11 / 19 |
+| 6 | **Provider Services** | `ProviderService`, `BusinessService` | `IMPLEMENTED` | Module 13 |
+| 7 | **Provider Pricing** | `PricingType` enum, price decimal fields | `IMPLEMENTED` | Module 13 |
+| 8 | **Geographic Hierarchy** | `Division`, `District`, `Upazila` | `IMPLEMENTED` | Module 11 / 19 |
+| 9 | **Provider Service Areas** | `BusinessLocation`, Provider area fields | `PARTIALLY_IMPLEMENTED` | Module 13 / 19 |
+| 10 | **Availability** | `ProviderAvailability` | `IMPLEMENTED` | Module 13 |
+| 11 | **Working Schedules** | `BookingSchedule`, `BookingRescheduleRequest` | `PARTIALLY_IMPLEMENTED` | Module 12 / 13 |
+| 12 | **Jobs** | `Job`, `JobStatusHistory`, `SavedJob` | `IMPLEMENTED` | Module 12 |
+| 13 | **Job Applications** | `JobApplication` | `IMPLEMENTED` | Module 12 / 13 |
+| 14 | **Bookings** | `Booking`, `BookingCancellation`, `BookingStatusHistory` | `IMPLEMENTED` | Module 12 |
+| 15 | **Work Orders** | `WorkOrder`, `WorkOrderStatusHistory`, `ServiceProgressUpdate` | `IMPLEMENTED` | Module 12 / 13 |
+| 16 | **Notifications Foundation** | `Notification` | `IMPLEMENTED` | Module 15 |
+| 17 | **Payment Architecture** | `PaymentOrder`, `PaymentAttempt` | `DATABASE_ONLY` | Module 16 (`FUTURE_MODULE`) |
+| 18 | **Wallet & Ledger** | `WalletAccount`, `WalletLedgerEntry`, `PayoutRequest` | `DATABASE_ONLY` | Module 16 (`FUTURE_MODULE`) |
+| 19 | **Reviews Foundation** | Rating fields in profile/bookings | `DATABASE_ONLY` | Module 18 (`FUTURE_MODULE`) |
+| 20 | **Disputes Foundation** | `DISPUTED` enum in `BookingStatus` | `DATABASE_ONLY` | Module 18 (`FUTURE_MODULE`) |
+| 21 | **Audit Logging** | `AuditLog`, `UserActivity` | `IMPLEMENTED` | Module 11 |
+| 22 | **Trust & Safety** | NID verification fields in `UserProfile` | `PARTIALLY_IMPLEMENTED` | Module 17 (`FUTURE_MODULE`) |
+
+---
+
+## Domain Relationship Mapping
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────┐
-│                           KAJLAGBE MARKETPLACE ECOSYSTEM                       │
+│                       KAJLAGBE MARKETPLACE BOUNDARY MAP                        │
 ├───────────────────┬───────────────────┬───────────────────┬────────────────────┤
 │ 1. Identity & Auth│ 2. Profiles & KYC │ 3. Roles & RBAC   │ 4. Service Taxonomy│
 ├───────────────────┼───────────────────┼───────────────────┼────────────────────┤
-│ 5. Provider Services│ 6. Geography     │ 7. Availability   │ 8. Job Marketplace │
+│ 5. Subservices    │ 6. Provider Serv. │ 7. Pricing        │ 8. Geography       │
 ├───────────────────┼───────────────────┼───────────────────┼────────────────────┤
-│ 9. Applications   │ 10. Bookings & WO │ 11. Escrow & Wallet│ 12. Trust & Safety │
+│ 9. Service Areas  │ 10. Availability  │ 11. Schedules     │ 12. Jobs           │
 ├───────────────────┼───────────────────┼───────────────────┼────────────────────┤
-│ 13. Messaging     │ 14. Reviews & Rating│ 15. Disputes      │                    │
-└───────────────────┴───────────────────┴───────────────────┴────────────────────┘
+│ 13. Applications  │ 14. Bookings      │ 15. Work Orders   │ 16. Notifications  │
+├───────────────────┼───────────────────┼───────────────────┼────────────────────┤
+│ 17. Payment Arch. │ 18. Wallet Ledger │ 19. Reviews Arch. │ 20. Disputes Arch. │
+├───────────────────┴───────────────────┴───────────────────┴────────────────────┤
+│ 21. Audit Logging                      │ 22. Trust & Safety                    │
+└────────────────────────────────────────┴────────────────────────────────────────┘
 ```
-
----
-
-### Domain 1: Identity & Authentication
-- **Responsibilities**: User registration, password authentication, Supabase Auth session issuance, password recovery, open redirect protection, and token validation.
-- **Invariants**: Every user must have a unique email address or phone number.
-
-### Domain 2: User Profiles & Provider KYC
-- **Responsibilities**: Manages customer personal details, provider skills/portfolios/biography, company business profiles, and NID identity verification status (`NOT_STARTED` -> `PENDING` -> `APPROVED` / `REJECTED`).
-
-### Domain 3: Roles & Permission Access Control (RBAC)
-- **Responsibilities**: Enforces multi-role authorization across 11 system roles (`SUPER_ADMIN`, `ADMIN`, `OPERATIONS_MANAGER`, `FINANCE_ADMIN`, `VERIFICATION_OFFICER`, `SUPPORT_AGENT`, `CUSTOMER`, `INDIVIDUAL_PROVIDER`, `COMPANY_OWNER`, `COMPANY_MANAGER`, `TEAM_MEMBER`).
-
-### Domain 4: Service Taxonomy & Catalog
-- **Responsibilities**: Governs 8 main service categories (AC Repair, Electrician, Plumbing, Cleaning, Appliance Repair, Painting, Shifting, IT & Tech Support) and subcategories.
-
-### Domain 5: Provider Services & Pricing
-- **Responsibilities**: Allows providers and agencies to list specialized services, pricing models (`FIXED`, `HOURLY`, `STARTING_FROM`), and base rates.
-
-### Domain 6: Geographic Location Hierarchy
-- **Responsibilities**: Maps 8 divisions of Bangladesh down to 64 districts and upazilas for location-based matching without exposing raw customer private addresses publicly.
-
-### Domain 7: Provider Availability & Schedule
-- **Responsibilities**: Controls real-time availability states (`AVAILABLE`, `BUSY`, `AWAY`) and working calendar slots.
-
-### Domain 8: Marketplace Job Posting
-- **Responsibilities**: Allows customers to post job requirements with category tags, area bounds, budget specifications (`FIXED_BUDGET`, `BUDGET_RANGE`, `NEGOTIABLE`, `REQUEST_QUOTES`), and urgency levels.
-
-### Domain 9: Bidding & Job Applications
-- **Responsibilities**: Allows verified providers to submit applications with cover notes, proposed prices, and completion estimates.
-
-### Domain 10: Booking & Work Order Management
-- **Responsibilities**: Governs the complete transactional lifecycle from `PENDING_CONFIRMATION` -> `CONFIRMED` -> `IN_PROGRESS` -> `COMPLETED`.
-
-### Domain 11: Escrow, Wallet & Platform Commission Engine
-- **Responsibilities**: Single-entry immutable wallet ledger (`WalletAccount`, `WalletLedgerEntry`) tracking customer payments, platform commission deductions (10% default), and provider payout withdrawals.
-
-### Domain 12: Trust, Safety & Verification Badges
-- **Responsibilities**: Calculates trust ratings from verified NID documents, completed job counts, ratings, and dispute history.
-
-### Domain 13: Real-time Communication & Messaging
-- **Responsibilities**: Context-isolated chat threads linked to specific jobs or bookings (`Conversation`, `Message`, `MessageAttachment`).
-
-### Domain 14: Ratings & Customer Reviews
-- **Responsibilities**: Allows verified customers to leave 1-5 star ratings and reviews following booking completion.
-
-### Domain 15: Disputes & Dispute Resolution
-- **Responsibilities**: Arbitration flow for handling incomplete work, quality complaints, or pricing disputes with evidence collection and administrative resolution.
