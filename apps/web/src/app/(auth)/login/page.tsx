@@ -59,8 +59,19 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = React.useState(false);
   const [resendLoading, setResendLoading] = React.useState(false);
 
-  // Auto redirect if logged in
+  // Auto redirect if logged in & read URL errors
   React.useEffect(() => {
+    const urlError = searchParams.get('error_description') || searchParams.get('error');
+    if (urlError) {
+      if (urlError === 'auth_callback_failed') {
+        setErrorMsg('গুগল লগইন ভেরিফিকেশন সেশন স্থাপন করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন অথবা ইমেইল দিয়ে লগইন করুন।');
+      } else if (urlError.toLowerCase().includes('provider is not enabled') || urlError.toLowerCase().includes('unsupported provider')) {
+        setErrorMsg('সুপাবেস প্রজেক্টে Google Provider সক্রিয় করতে হবে। আপনি ইমেইল বা ১-ক্লিক ডেমো দিয়ে সরাসরি লগইন করতে পারেন।');
+      } else {
+        setErrorMsg(decodeURIComponent(urlError));
+      }
+    }
+
     if (isAuthenticated) {
       if (redirectTo && redirectTo !== '/') {
         router.push(redirectTo);
@@ -72,7 +83,7 @@ export default function LoginPage() {
         router.push('/dashboard');
       }
     }
-  }, [isAuthenticated, role, redirectTo, router]);
+  }, [isAuthenticated, role, redirectTo, router, searchParams]);
 
   // Resend OTP Countdown
   React.useEffect(() => {

@@ -185,13 +185,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const target = redirectToUrl || '/dashboard';
       const callbackUrl = `${origin}/auth/callback?redirectTo=${encodeURIComponent(target)}`;
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: callbackUrl,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'select_account consent',
           },
         },
       });
@@ -199,6 +199,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         return { success: false, error: error.message };
       }
+
+      if (data?.url && typeof window !== 'undefined') {
+        window.location.href = data.url;
+      }
+
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message || 'গুগল লগইন শুরু করা সম্ভব হয়নি' };
