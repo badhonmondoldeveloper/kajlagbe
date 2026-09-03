@@ -238,7 +238,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        return { success: false, error: error.message };
+        let msg = error.message;
+        if (error.message.includes('Unsupported provider') || error.message.includes('provider is not enabled')) {
+          msg = 'Supabase-এ Google Provider এনাবল করা নেই। Supabase Dashboard -> Authentication -> Providers -> Google এ গিয়ে Google Client ID & Secret সেটিং সম্পন্ন করুন।';
+        }
+        return { success: false, error: msg };
       }
 
       if (data?.url && typeof window !== 'undefined') {
