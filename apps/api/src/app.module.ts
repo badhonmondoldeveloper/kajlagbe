@@ -38,6 +38,7 @@ import { BookingsModule } from './modules/bookings';
 import { WorkOrdersModule } from './modules/work-orders/work-orders.module';
 import { ReviewsModule } from './modules/reviews';
 import { MessagesModule } from './modules/messages';
+import { ChatModule } from './modules/chat/chat.module';
 import { NotificationsModule } from './modules/notifications';
 import { PaymentsModule } from './modules/payments';
 import { LedgerModule } from './modules/ledger';
@@ -100,6 +101,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     QuotationsModule,
     BookingsModule,
     WorkOrdersModule,
+    ChatModule,
     ReviewsModule,
     MessagesModule,
     NotificationsModule,

@@ -89,3 +89,4 @@ Customer Confirmation
 - **Customer Portal**: `/customer/bookings`, `/customer/bookings/[id]`
 - **Provider Portal**: `/provider/bookings`, `/provider/bookings/[id]`, `/provider/schedule`
 - **Dashboards**: Integrated metric counters and active booking radar cards on `/customer/dashboard` and `/provider/dashboard`.
+

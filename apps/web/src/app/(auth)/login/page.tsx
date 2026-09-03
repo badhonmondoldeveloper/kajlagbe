@@ -24,7 +24,9 @@ import { useAuth } from '../../../context/auth-context';
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirectTo') || searchParams.get('next') || '/';
+  const rawRedirect = searchParams.get('redirectTo') || searchParams.get('next') || '/';
+  const redirectTo = (rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')) ? rawRedirect : '/dashboard';
+
   const {
     signIn,
     signInWithGoogle,
@@ -66,7 +68,7 @@ export default function LoginPage() {
       if (urlError === 'auth_callback_failed') {
         setErrorMsg('গুগল লগইন ভেরিফিকেশন সেশন স্থাপন করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন অথবা ইমেইল দিয়ে লগইন করুন।');
       } else if (urlError.toLowerCase().includes('provider is not enabled') || urlError.toLowerCase().includes('unsupported provider')) {
-        setErrorMsg('সুপাবেস প্রজেক্টে Google Provider সক্রিয় করতে হবে। আপনি ইমেইল বা ১-ক্লিক ডেমো দিয়ে সরাসরি লগইন করতে পারেন।');
+        setErrorMsg('সুপাবেস প্রজেক্টে Google Provider সক্রিয় করতে হবে। আপনি ইমেইল দিয়ে সরাসরি লগইন করতে পারেন।');
       } else {
         setErrorMsg(decodeURIComponent(urlError));
       }

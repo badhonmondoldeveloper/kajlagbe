@@ -120,3 +120,4 @@ export interface ProgressUpdateDto {
   note?: string;
   images?: string[];
 }
+

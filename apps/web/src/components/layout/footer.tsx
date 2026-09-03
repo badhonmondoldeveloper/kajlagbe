@@ -99,11 +99,6 @@ export function Footer() {
                   নিরাপত্তা ও নীতি নির্দেশিকা
                 </Link>
               </li>
-              <li>
-                <Link href="/design-system" className="hover:text-emerald-600 transition font-medium text-emerald-600">
-                  ডিজাইন সিস্টেম গাইড
-                </Link>
-              </li>
             </ul>
           </div>
 

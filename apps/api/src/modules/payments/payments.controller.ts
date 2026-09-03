@@ -1,40 +1,72 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from "@nestjs/common";
-import { ApiTags, ApiOperation } from "@nestjs/swagger";
-import { PaymentsService } from "./payments.service";
-import { CreatePaymentsDto, UpdatePaymentsDto } from "./payments.dto";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { PaymentsService } from './payments.service';
+import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { PaymentMethod } from '@kajlagbe/types';
 
-@ApiTags("Payments")
-@Controller("payments")
+@ApiTags('payments')
+@ApiBearerAuth()
+@UseGuards(SupabaseAuthGuard)
+@Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
-  @Get()
-  @ApiOperation({ summary: "Get all Payments" })
-  findAll() {
-    return this.paymentsService.findAll();
+  @Post('create-order')
+  @ApiOperation({ summary: 'Create payment order' })
+  async createPaymentOrder(
+    @CurrentUser('id') userId: string,
+    @Body()
+    body: {
+      bookingId?: string;
+      workOrderId?: string;
+      grossAmount?: number;
+      paymentMethod?: PaymentMethod;
+    },
+  ) {
+    return this.paymentsService.createPaymentOrder(
+      userId,
+      body.bookingId,
+      body.workOrderId,
+      body.grossAmount,
+      body.paymentMethod,
+    );
   }
 
-  @Get(":id")
-  @ApiOperation({ summary: "Get Payments by id" })
-  findOne(@Param("id") id: string) {
-    return this.paymentsService.findOne(id);
+  @Post('verify')
+  @ApiOperation({ summary: 'Server-side payment verification (Idempotent)' })
+  async verifyPayment(
+    @CurrentUser('id') userId: string,
+    @Body()
+    body: {
+      paymentOrderId: string;
+      transactionId: string;
+      gatewayProvider?: string;
+    },
+  ) {
+    return this.paymentsService.verifyPayment(
+      userId,
+      body.paymentOrderId,
+      body.transactionId,
+      body.gatewayProvider,
+    );
   }
 
-  @Post()
-  @ApiOperation({ summary: "Create Payments" })
-  create(@Body() dto: CreatePaymentsDto) {
-    return this.paymentsService.create(dto);
+  @Get('customer/history')
+  @ApiOperation({ summary: 'Get customer payment history' })
+  async getCustomerPayments(@CurrentUser('id') userId: string) {
+    return this.paymentsService.getCustomerPayments(userId);
   }
 
-  @Put(":id")
-  @ApiOperation({ summary: "Update Payments" })
-  update(@Param("id") id: string, @Body() dto: UpdatePaymentsDto) {
-    return this.paymentsService.update(id, dto);
-  }
-
-  @Delete(":id")
-  @ApiOperation({ summary: "Delete Payments" })
-  remove(@Param("id") id: string) {
-    return this.paymentsService.remove(id);
+  @Get('provider/history')
+  @ApiOperation({ summary: 'Get provider payment earnings history' })
+  async getProviderPayments(@CurrentUser('id') userId: string) {
+    return this.paymentsService.getProviderPayments(userId);
   }
 }

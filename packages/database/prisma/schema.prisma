@@ -140,6 +140,12 @@ model User {
   bookingHistories  BookingStatusHistory[]
   workOrderHistories WorkOrderStatusHistory[]
   progressUpdates   ServiceProgressUpdate[]
+  conversationParticipants ConversationParticipant[]
+  sentMessages             Message[]
+  customerPayments         PaymentOrder[]            @relation("CustomerPayments")
+  providerPayments         PaymentOrder[]            @relation("ProviderPayments")
+  walletAccount            WalletAccount?
+  payoutRequests           PayoutRequest[]
 
   @@index([email])
   @@index([phone])
@@ -857,5 +863,244 @@ model ServiceProgressUpdate {
   @@index([createdAt])
   @@map("service_progress_updates")
 }
+
+// ==========================================
+// MODULE 08: CHAT & COMMUNICATION SYSTEM
+// ==========================================
+
+enum ConversationContextType {
+  DIRECT
+  JOB_APPLICATION
+  BOOKING
+  WORK_ORDER
+  SUPPORT
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+model Conversation {
+  id                    String                  @id @default(uuid())
+  conversationReference String                  @unique
+  contextType           ConversationContextType @default(DIRECT)
+  jobId                 String?
+  bookingId             String?
+  workOrderId           String?
+  lastMessageAt         DateTime                @default(now())
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  participants          ConversationParticipant[]
+  messages              Message[]
+
+  @@index([contextType])
+  @@index([jobId])
+  @@index([bookingId])
+  @@index([workOrderId])
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("MEMBER")
+  unreadCount    Int          @default(0)
+  lastReadAt     DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String        @id @default(uuid())
+  conversationId String
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  type           MessageType   @default(TEXT)
+  content        String
+  status         MessageStatus @default(SENT)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  attachments    MessageAttachment[]
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model MessageAttachment {
+  id        String   @id @default(uuid())
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileUrl   String
+  fileType  String
+  fileName  String
+  fileSize  Int
+  createdAt DateTime @default(now())
+
+  @@index([messageId])
+  @@map("message_attachments")
+}
+
+// ==========================================
+// MODULE 09: PAYMENTS, WALLET & REVENUE ENGINE
+// ==========================================
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  ONLINE_BKASH
+  ONLINE_NAGAD
+  ONLINE_CARDS
+  CASH_ON_SERVICE
+}
+
+enum LedgerEntryType {
+  CREDIT
+  DEBIT
+  COMMISSION_FEE
+  HOLD
+  RELEASE
+  PAYOUT
+  REFUND
+}
+
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  PROCESSING
+  PAID
+  REJECTED
+}
+
+model PaymentOrder {
+  id                 String        @id @default(uuid())
+  orderReference     String        @unique
+  bookingId          String?
+  workOrderId        String?
+  customerId         String
+  customer           User          @relation("CustomerPayments", fields: [customerId], references: [id], onDelete: Cascade)
+  providerId         String
+  provider           User          @relation("ProviderPayments", fields: [providerId], references: [id], onDelete: Cascade)
+  grossAmount        Decimal       @db.Decimal(10, 2)
+  commissionAmount   Decimal       @db.Decimal(10, 2)
+  netProviderAmount  Decimal       @db.Decimal(10, 2)
+  paymentMethod      PaymentMethod @default(ONLINE_BKASH)
+  status             PaymentStatus @default(PENDING)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  attempts           PaymentAttempt[]
+
+  @@index([customerId])
+  @@index([providerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("payment_orders")
+}
+
+model PaymentAttempt {
+  id              String       @id @default(uuid())
+  paymentOrderId  String
+  paymentOrder    PaymentOrder @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
+  gatewayProvider String       @default("BKASH")
+  transactionId   String?      @unique
+  status          PaymentStatus @default(PENDING)
+  idempotencyKey  String       @unique
+  rawPayload      String?
+  createdAt       DateTime     @default(now())
+
+  @@index([paymentOrderId])
+  @@index([idempotencyKey])
+  @@map("payment_attempts")
+}
+
+model PlatformCommissionConfig {
+  id           String   @id @default(uuid())
+  categorySlug String   @unique
+  percentage   Decimal  @default(10.00) @db.Decimal(5, 2)
+  fixedFee     Decimal  @default(0.00) @db.Decimal(10, 2)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("platform_commission_configs")
+}
+
+model WalletAccount {
+  id               String               @id @default(uuid())
+  userId           String               @unique
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availableBalance Decimal              @default(0.00) @db.Decimal(10, 2)
+  pendingBalance   Decimal              @default(0.00) @db.Decimal(10, 2)
+  totalEarned      Decimal              @default(0.00) @db.Decimal(10, 2)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  ledgerEntries    WalletLedgerEntry[]
+
+  @@index([userId])
+  @@map("wallet_accounts")
+}
+
+model WalletLedgerEntry {
+  id              String          @id @default(uuid())
+  walletAccountId String
+  walletAccount   WalletAccount   @relation(fields: [walletAccountId], references: [id], onDelete: Cascade)
+  amount          Decimal         @db.Decimal(10, 2)
+  type            LedgerEntryType
+  referenceId     String?
+  description     String
+  createdAt       DateTime        @default(now())
+
+  @@index([walletAccountId])
+  @@index([createdAt])
+  @@map("wallet_ledger_entries")
+}
+
+model PayoutRequest {
+  id             String       @id @default(uuid())
+  providerId     String
+  provider       User         @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  amount         Decimal      @db.Decimal(10, 2)
+  paymentMethod  PaymentMethod @default(ONLINE_BKASH)
+  accountDetails String
+  status         PayoutStatus @default(PENDING)
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([providerId])
+  @@index([status])
+  @@map("payout_requests")
+}
+
 
 

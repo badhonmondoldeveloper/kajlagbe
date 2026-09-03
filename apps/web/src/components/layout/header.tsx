@@ -12,11 +12,10 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const { user, profile, role, isAuthenticated, signOut } = useAuth();
 
-  const navLinks = [
+  const navLinks: { label: string; href: string; badge?: string }[] = [
     { label: 'সেবা খুঁজুন', href: '/services' },
     { label: 'প্রোভাইডার তালিকা', href: '/providers' },
     { label: 'কাজের বোর্ড', href: '/jobs' },
-    { label: 'ডিজাইন সিস্টেম', href: '/design-system', badge: 'Demo' },
     { label: 'কিভাবে কাজ করে', href: '/how-it-works' },
   ];
 

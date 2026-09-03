@@ -5,3 +5,5 @@ export * from './location';
 export * from './dashboard';
 export * from './jobs';
 export * from './bookings';
+export * from './chat';
+export * from './payments';

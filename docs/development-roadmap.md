@@ -85,20 +85,22 @@ This document defines the 12-module roadmap to construct the full KajLagbe platf
 
 ---
 
-### MODULE 08 — Messaging, Notifications & Real-Time
-- Real-time in-app chat with image/attachment sharing (WebSockets / Socket.IO)
-- Push notifications for web and mobile (Firebase Cloud Messaging)
-- SMS alerts for critical events (Booking confirmed, Provider arrived, OTP)
-- Email notifications for invoices and receipts
+### MODULE 08 — Advanced Communication & Chat System (Completed)
+- Context-Aware Conversations: Initiates chat between Customer, Provider, and Business based on authorized marketplace context (`DIRECT`, `JOB_APPLICATION`, `BOOKING`, `WORK_ORDER`)
+- Real-Time Messaging: Integrated NestJS WebSocket / Supabase Realtime event streaming for instant message delivery and unread badges
+- Database-Backed Security: Participant membership & relationship checks strictly enforced server-side
+- Mobile-First Chat UI: Searchable Inbox (`/messages`) and Chat Window (`/messages/[id]`) with system message pills, attachment support, and touch-friendly composer
+- Extended Prisma Schema: `Conversation`, `ConversationParticipant`, `Message`, `MessageAttachment`
 
 ---
 
-### MODULE 09 — Revenue Engine & Payments
-- Payment gateway integration for Bangladesh: bKash, Nagad, Rocket, Upay, Visa/Mastercard (SSLCommerz / Shurjopay)
-- Escrow payment hold until service completion & customer sign-off
-- Platform commission deduction engine
-- Provider payout withdrawal requests & finance approval queue
-- Double-entry ledger for accounting integrity
+### MODULE 09 — Payment, Wallet, Commission & Revenue Engine (Completed)
+- Financial Architecture: `PaymentOrder` (`ORDER-2026-XXXX`), `PaymentAttempt`, `PlatformCommissionConfig`, `WalletAccount`, `WalletLedgerEntry`
+- Bangladesh Payment Adapter: Provider-agnostic gateway architecture for bKash, Nagad, Cards
+- Server-Side Verification: Idempotent payment verification and webhook signature validation to prevent duplicate transactions
+- Platform Commission Engine: Dynamic percentage/fixed fee calculations with rule snapshotting at order creation
+- Double-Entry Append-Only Wallet Ledger: Tracks available balance, pending balance, and net provider earnings
+- Customer & Provider Portals: Customer Payments (`/customer/payments`), Provider Earnings (`/provider/earnings`), Provider Payout Requests (`/provider/payouts`)
 
 ---
 
