@@ -35,7 +35,11 @@ export interface AuthContextType {
   onboardingStatus: string;
   isLoading: boolean;
   isAuthenticated: boolean;
-  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string; isUnverified?: boolean }>;
+  signInWithGoogle: (redirectTo?: string) => Promise<{ success: boolean; error?: string }>;
+  sendPhoneOtp: (phone: string) => Promise<{ success: boolean; phone?: string; error?: string }>;
+  verifyPhoneOtp: (phone: string, token: string) => Promise<{ success: boolean; error?: string }>;
+  resendVerificationEmail: (email: string) => Promise<{ success: boolean; error?: string }>;
   signUp: (params: {
     email: string;
     password: string;
@@ -63,7 +67,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fetch or sync user profile
   const fetchProfile = React.useCallback(async (authUser: User) => {
     try {
-      // In dev / client mode, build user profile from metadata + local sync
       const meta = authUser.user_metadata || {};
       const fallbackRole = meta.role || RoleType.CUSTOMER;
       const fallbackName = meta.full_name || meta.name || 'ব্যবহারকারী';
@@ -140,16 +143,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
       if (error) {
+        const isUnverified = error.message.toLowerCase().includes('email not confirmed');
+        let errorBangla = error.message;
+
+        if (error.message.includes('Invalid login credentials')) {
+          errorBangla = 'ভুল ইমেইল বা পাসওয়ার্ড প্রদান করেছেন';
+        } else if (isUnverified) {
+          errorBangla = 'আপনার ইমেইল ঠিকানা এখনো ভেরিফাই করা হয়নি। অনুগ্রহ করে ইনবক্স চেক করুন অথবা নতুন কোড রিকোয়েস্ট করুন।';
+        }
+
         return {
           success: false,
-          error: error.message.includes('Invalid login credentials')
-            ? 'ভুল ইমেইল বা পাসওয়ার্ড প্রদান করেছেন'
-            : error.message,
+          error: errorBangla,
+          isUnverified,
         };
       }
 
@@ -167,6 +178,104 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithGoogle = async (redirectToUrl?: string) => {
+    setIsLoading(true);
+    try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const target = redirectToUrl || '/dashboard';
+      const callbackUrl = `${origin}/auth/callback?redirectTo=${encodeURIComponent(target)}`;
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: callbackUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'গুগল লগইন শুরু করা সম্ভব হয়নি' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const sendPhoneOtp = async (phone: string) => {
+    setIsLoading(true);
+    try {
+      let normalized = phone.replace(/[\s-]/g, '');
+      if (!normalized.startsWith('+880')) {
+        if (normalized.startsWith('0')) {
+          normalized = '+88' + normalized;
+        } else if (normalized.startsWith('880')) {
+          normalized = '+' + normalized;
+        } else {
+          normalized = '+880' + normalized;
+        }
+      }
+
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: normalized,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      return { success: true, phone: normalized };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'OTP পাঠানো সম্ভব হয়নি' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyPhoneOtp = async (phone: string, token: string) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone,
+        token: token.trim(),
+        type: 'sms',
+      });
+
+      if (error) {
+        return { success: false, error: 'ভুল বা মেয়াদোত্তীর্ণ OTP কোড প্রদান করেছেন' };
+      }
+
+      if (data.user) {
+        setUser(data.user);
+        setSession(data.session);
+        await fetchProfile(data.user);
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'OTP যাচাইকরণ ব্যর্থ হয়েছে' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resendVerificationEmail = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email.trim(),
+      });
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  };
+
   const signUp = async (params: {
     email: string;
     password: string;
@@ -178,7 +287,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
-        email: params.email,
+        email: params.email.trim(),
         password: params.password,
         options: {
           data: {
@@ -237,7 +346,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           ? `${window.location.origin}/reset-password`
           : undefined;
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: redirectUrl,
       });
 
@@ -281,6 +390,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     isAuthenticated: !!user,
     signIn,
+    signInWithGoogle,
+    sendPhoneOtp,
+    verifyPhoneOtp,
+    resendVerificationEmail,
     signUp,
     signOut,
     requestPasswordReset,
@@ -298,4 +411,3 @@ export function useAuth() {
   }
   return context;
 }
-

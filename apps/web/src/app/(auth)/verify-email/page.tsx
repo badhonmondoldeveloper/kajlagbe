@@ -8,7 +8,7 @@ import { AuthCard } from '../../../components/auth/auth-card';
 import { useAuth } from '../../../context/auth-context';
 
 export default function VerifyEmailPage() {
-  const { user } = useAuth();
+  const { user, resendVerificationEmail } = useAuth();
   const [resending, setResending] = React.useState(false);
   const [resentSuccess, setResentSuccess] = React.useState(false);
 
@@ -18,11 +18,11 @@ export default function VerifyEmailPage() {
     setResending(true);
     setResentSuccess(false);
 
-    // Simulate resend with delay
-    setTimeout(() => {
-      setResending(false);
-      setResentSuccess(true);
-    }, 1200);
+    if (user?.email) {
+      await resendVerificationEmail(user.email);
+    }
+    setResending(false);
+    setResentSuccess(true);
   };
 
   return (
