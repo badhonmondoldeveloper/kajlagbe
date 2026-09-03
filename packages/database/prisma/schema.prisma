@@ -577,6 +577,7 @@ model Job {
   statusHistories       JobStatusHistory[]
   savedBy               SavedJob[]
   booking               Booking?
+  conversations         Conversation[]
 
   @@index([customerId])
   @@index([status])
@@ -603,6 +604,7 @@ model JobApplication {
   updatedAt        DateTime          @updatedAt
 
   bookings         Booking[]
+  conversations    Conversation[]
 
   @@unique([jobId, providerId])
   @@index([jobId])
@@ -722,6 +724,7 @@ model Booking {
   cancellation        BookingCancellation?
   statusHistories     BookingStatusHistory[]
   progressUpdates     ServiceProgressUpdate[]
+  conversations       Conversation[]
 
   @@index([customerId])
   @@index([providerId])
@@ -804,6 +807,7 @@ model WorkOrder {
 
   statusHistories     WorkOrderStatusHistory[]
   progressUpdates     ServiceProgressUpdate[]
+  conversations       Conversation[]
 
   @@index([customerId])
   @@index([providerId])
@@ -894,15 +898,25 @@ model Conversation {
   conversationReference String                  @unique
   contextType           ConversationContextType @default(DIRECT)
   jobId                 String?
+  jobApplicationId      String?
   bookingId             String?
   workOrderId           String?
+  supportTicketId       String?
   lastMessageAt         DateTime                @default(now())
   createdAt             DateTime                @default(now())
   updatedAt             DateTime                @updatedAt
 
+  job                   Job?                    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobApplication        JobApplication?         @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+  booking               Booking?                @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  workOrder             WorkOrder?              @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+
   participants          ConversationParticipant[]
   messages              Message[]
 
+  @@unique([contextType, jobApplicationId])
+  @@unique([contextType, bookingId])
+  @@unique([contextType, workOrderId])
   @@index([contextType])
   @@index([jobId])
   @@index([bookingId])
@@ -912,15 +926,16 @@ model Conversation {
 }
 
 model ConversationParticipant {
-  id             String       @id @default(uuid())
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role           String       @default("MEMBER")
-  unreadCount    Int          @default(0)
-  lastReadAt     DateTime     @default(now())
-  createdAt      DateTime     @default(now())
+  id                 String       @id @default(uuid())
+  conversationId     String
+  conversation       Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role               String       @default("MEMBER")
+  unreadCount        Int          @default(0)
+  lastReadMessageId  String?
+  lastReadAt         DateTime     @default(now())
+  createdAt          DateTime     @default(now())
 
   @@unique([conversationId, userId])
   @@index([conversationId])
@@ -972,7 +987,10 @@ enum PaymentStatus {
   SUCCEEDED
   FAILED
   CANCELLED
+  EXPIRED
+  REFUND_PENDING
   REFUNDED
+  PARTIALLY_REFUNDED
 }
 
 enum PaymentMethod {
@@ -1001,23 +1019,27 @@ enum PayoutStatus {
 }
 
 model PaymentOrder {
-  id                 String        @id @default(uuid())
-  orderReference     String        @unique
-  bookingId          String?
-  workOrderId        String?
-  customerId         String
-  customer           User          @relation("CustomerPayments", fields: [customerId], references: [id], onDelete: Cascade)
-  providerId         String
-  provider           User          @relation("ProviderPayments", fields: [providerId], references: [id], onDelete: Cascade)
-  grossAmount        Decimal       @db.Decimal(10, 2)
-  commissionAmount   Decimal       @db.Decimal(10, 2)
-  netProviderAmount  Decimal       @db.Decimal(10, 2)
-  paymentMethod      PaymentMethod @default(ONLINE_BKASH)
-  status             PaymentStatus @default(PENDING)
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  id                     String        @id @default(uuid())
+  orderReference         String        @unique
+  bookingId              String?
+  workOrderId            String?
+  customerId             String
+  customer               User          @relation("CustomerPayments", fields: [customerId], references: [id], onDelete: Cascade)
+  providerId             String
+  provider               User          @relation("ProviderPayments", fields: [providerId], references: [id], onDelete: Cascade)
+  grossAmount            Decimal       @db.Decimal(12, 2)
+  commissionRateSnapshot Decimal       @default(10.00) @db.Decimal(5, 2)
+  fixedFeeSnapshot       Decimal       @default(0.00) @db.Decimal(12, 2)
+  commissionAmount       Decimal       @db.Decimal(12, 2)
+  netProviderAmount      Decimal       @db.Decimal(12, 2)
+  currency               String        @default("BDT")
+  ruleVersionSnapshot    String        @default("v1.0")
+  paymentMethod          PaymentMethod @default(ONLINE_BKASH)
+  status                 PaymentStatus @default(PENDING)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
 
-  attempts           PaymentAttempt[]
+  attempts               PaymentAttempt[]
 
   @@index([customerId])
   @@index([providerId])

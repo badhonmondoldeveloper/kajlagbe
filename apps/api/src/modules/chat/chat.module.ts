@@ -10,3 +10,4 @@ import { ChatController } from './chat.controller';
   exports: [ConversationsService, MessagesService],
 })
 export class ChatModule {}
+

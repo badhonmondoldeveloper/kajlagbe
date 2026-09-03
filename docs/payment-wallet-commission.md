@@ -54,3 +54,4 @@ Double-Entry Append-Only Wallet Ledger
 - `/customer/payments` — Digital receipts and customer payment history.
 - `/provider/earnings` — Provider earnings console with gross earnings, platform fee deduction, and net balance.
 - `/provider/payouts` — Provider withdrawal request portal.
+

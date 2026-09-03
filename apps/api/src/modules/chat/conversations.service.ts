@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { ConversationContextType } from '@kajlagbe/types';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class ConversationsService {
@@ -16,32 +17,36 @@ export class ConversationsService {
 
   private generateReference(): string {
     const year = new Date().getFullYear();
-    const random = Math.floor(1000 + Math.random() * 9000);
-    return `CONV-${year}-${random}`;
+    const randomHex = crypto.randomBytes(4).toString('hex').toUpperCase();
+    return `CONV-${year}-${randomHex}`;
   }
 
   /**
-   * Get or Create Conversation between participants based on valid marketplace context
+   * Get or Create Conversation between participants based on explicit marketplace relations
    */
   async getOrCreateConversation(
     userId: string,
     recipientId: string,
     contextType: ConversationContextType = ConversationContextType.DIRECT,
     jobId?: string,
+    jobApplicationId?: string,
     bookingId?: string,
     workOrderId?: string,
+    supportTicketId?: string,
   ): Promise<any> {
     if (userId === recipientId) {
       throw new BadRequestException('নিজের সাথে মেসেজ আদান-প্রদান করা সম্ভব নয়।');
     }
 
-    // Check existing conversation
+    // Check existing conversation using explicit relation constraints
     const existing = await this.prisma.conversation.findFirst({
       where: {
         contextType,
         jobId: jobId || null,
+        jobApplicationId: jobApplicationId || null,
         bookingId: bookingId || null,
         workOrderId: workOrderId || null,
+        supportTicketId: supportTicketId || null,
         participants: {
           every: {
             userId: { in: [userId, recipientId] },
@@ -74,8 +79,10 @@ export class ConversationsService {
         conversationReference,
         contextType,
         jobId,
+        jobApplicationId,
         bookingId,
         workOrderId,
+        supportTicketId,
         participants: {
           create: [
             { userId, role: 'INITIATOR' },

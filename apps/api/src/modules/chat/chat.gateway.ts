@@ -12,3 +12,4 @@ export class ChatGateway {
     return { status: 'broadcasted', conversationId, messageId: message.id };
   }
 }
+

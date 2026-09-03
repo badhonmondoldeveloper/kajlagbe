@@ -4,7 +4,10 @@ export enum PaymentStatus {
   SUCCEEDED = 'SUCCEEDED',
   FAILED = 'FAILED',
   CANCELLED = 'CANCELLED',
+  EXPIRED = 'EXPIRED',
+  REFUND_PENDING = 'REFUND_PENDING',
   REFUNDED = 'REFUNDED',
+  PARTIALLY_REFUNDED = 'PARTIALLY_REFUNDED',
 }
 
 export enum PaymentMethod {
@@ -40,8 +43,12 @@ export interface PaymentOrderResponseDto {
   customerId: string;
   providerId: string;
   grossAmount: number;
+  commissionRateSnapshot: number;
+  fixedFeeSnapshot: number;
   commissionAmount: number;
   netProviderAmount: number;
+  currency: string;
+  ruleVersionSnapshot: string;
   paymentMethod: PaymentMethod;
   status: PaymentStatus;
   createdAt: string | Date;
@@ -73,4 +80,14 @@ export interface WalletSummaryDto {
   availableBalance: number;
   pendingBalance: number;
   totalEarned: number;
+}
+
+/**
+ * Provider-Agnostic Payment Gateway Adapter Interface
+ */
+export interface PaymentGatewayAdapter {
+  gatewayName: string;
+  createPaymentOrder(order: any): Promise<{ success: boolean; redirectUrl?: string; rawPayload?: any }>;
+  verifyPayment(payload: any): Promise<{ success: boolean; transactionId: string; rawPayload?: any }>;
+  handleWebhook(headers: any, body: any): Promise<{ success: boolean; transactionId: string; rawPayload?: any }>;
 }

@@ -97,3 +97,4 @@ export class ChatController {
     return this.messagesService.markAsRead(userId, id);
   }
 }
+

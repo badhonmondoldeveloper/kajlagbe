@@ -14,6 +14,7 @@ import {
   NotificationType,
   ActivityType,
 } from '@kajlagbe/types';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class PaymentsService {
@@ -27,12 +28,37 @@ export class PaymentsService {
 
   private generateOrderReference(): string {
     const year = new Date().getFullYear();
-    const random = Math.floor(10000 + Math.random() * 90000);
-    return `ORDER-${year}-${random}`;
+    const randomHex = crypto.randomBytes(4).toString('hex').toUpperCase();
+    return `KJL-${year}-${randomHex}`;
   }
 
   /**
-   * Create Payment Order for Booking / Work Order
+   * Helper to sanitize and redact secret keys from raw payload
+   */
+  private redactRawPayload(payload: any): string {
+    if (!payload) return '';
+    try {
+      const sanitized = JSON.parse(JSON.stringify(payload));
+      const sensitiveKeys = ['password', 'secret', 'pin', 'app_secret', 'auth_token', 'card_number', 'cvv'];
+      const maskObject = (obj: any) => {
+        if (typeof obj !== 'object' || obj === null) return;
+        for (const key of Object.keys(obj)) {
+          if (sensitiveKeys.some((s) => key.toLowerCase().includes(s))) {
+            obj[key] = '[REDACTED_SECRET]';
+          } else if (typeof obj[key] === 'object') {
+            maskObject(obj[key]);
+          }
+        }
+      };
+      maskObject(sanitized);
+      return JSON.stringify(sanitized);
+    } catch {
+      return '[UNPARSABLE_PAYLOAD]';
+    }
+  }
+
+  /**
+   * Create Payment Order for Booking / Work Order with Immutable Commission Snapshot
    */
   async createPaymentOrder(
     customerId: string,
@@ -83,15 +109,15 @@ export class PaymentsService {
       throw new BadRequestException('পেমেন্টের পরিমাণ ও প্রোভাইডার সঠিক নয়।');
     }
 
-    // Calculate Platform Commission
+    // Calculate Platform Commission & Rules
     const categorySlug = booking?.job?.categorySlug;
-    const { commissionAmount, netProviderAmount } =
+    const { commissionAmount, netProviderAmount, percentage, fixedFee } =
       await this.commissionEngine.calculateCommission(finalGrossAmount, categorySlug);
 
     const orderReference = this.generateOrderReference();
     const idempotencyKey = `IDEM-${orderReference}-${Date.now()}`;
 
-    // Create PaymentOrder & PaymentAttempt
+    // Create PaymentOrder & PaymentAttempt with Commission Snapshotting
     const order = await this.prisma.paymentOrder.create({
       data: {
         orderReference,
@@ -100,8 +126,12 @@ export class PaymentsService {
         customerId,
         providerId,
         grossAmount: finalGrossAmount,
+        commissionRateSnapshot: percentage,
+        fixedFeeSnapshot: fixedFee,
         commissionAmount,
         netProviderAmount,
+        currency: 'BDT',
+        ruleVersionSnapshot: 'v1.0',
         paymentMethod,
         status: PaymentStatus.PENDING,
         attempts: {
@@ -121,13 +151,14 @@ export class PaymentsService {
   }
 
   /**
-   * Server-Side Payment Verification & Webhook Processing (Idempotency Safe)
+   * Server-Side Payment Verification & Webhook Processing (Idempotency Safe & State Machine Enforced)
    */
   async verifyPayment(
     customerId: string,
     paymentOrderId: string,
     transactionId: string,
     gatewayProvider = 'BKASH',
+    rawPayload?: any,
   ): Promise<any> {
     return this.prisma.$transaction(async (tx) => {
       const order = await tx.paymentOrder.findUnique({
@@ -144,6 +175,14 @@ export class PaymentsService {
         return order;
       }
 
+      // State Machine Guard
+      if (order.status === PaymentStatus.CANCELLED || order.status === PaymentStatus.FAILED) {
+        throw new BadRequestException('বাতিলকৃত বা ব্যর্থ অর্ডারের স্থিতি সরাসরি পরিবর্তন সম্ভব নয়।');
+      }
+
+      // Redact Raw Payload
+      const redactedPayload = this.redactRawPayload(rawPayload);
+
       // Update Attempt
       const attempt = order.attempts[0];
       if (attempt) {
@@ -153,6 +192,7 @@ export class PaymentsService {
             transactionId,
             gatewayProvider,
             status: PaymentStatus.SUCCEEDED,
+            rawPayload: redactedPayload,
           },
         });
       }

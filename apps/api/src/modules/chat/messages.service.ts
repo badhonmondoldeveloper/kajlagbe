@@ -136,9 +136,9 @@ export class MessagesService {
   }
 
   /**
-   * Mark messages as read for a participant
+   * Mark messages as read for a participant (Concurrency Safe Participant Tracking)
    */
-  async markAsRead(userId: string, conversationId: string): Promise<any> {
+  async markAsRead(userId: string, conversationId: string, messageId?: string): Promise<any> {
     const participant = await this.prisma.conversationParticipant.findUnique({
       where: { conversationId_userId: { conversationId, userId } },
     });
@@ -149,6 +149,7 @@ export class MessagesService {
       where: { id: participant.id },
       data: {
         unreadCount: 0,
+        lastReadMessageId: messageId || null,
         lastReadAt: new Date(),
       },
     });

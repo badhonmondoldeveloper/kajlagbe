@@ -40,3 +40,4 @@ Conversation
 ## Frontend Portals
 - `/messages` — Searchable Inbox with context badges and unread counts.
 - `/messages/[id]` — Real-time Chat Window with system message pills, attachment support, auto-scrolling timeline, and mobile-first composer.
+
