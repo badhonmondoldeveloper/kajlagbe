@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+enum VerificationStatus {
+  NOT_STARTED
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                String      @id @default(uuid())
+  email             String      @unique
+  phone             String?     @unique
+  passwordHash      String?
+  status            UserStatus  @default(PENDING_VERIFICATION)
+  isEmailVerified   Boolean     @default(false)
+  isPhoneVerified   Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  profile           UserProfile?
+  userRoles         UserRole[]
+  auditLogs         AuditLog[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([status])
+  @@map("users")
+}
+
+model UserProfile {
+  id                 String             @id @default(uuid())
+  userId             String             @unique
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName          String
+  lastName           String
+  avatarUrl          String?
+  bio                String?
+  address            String?
+  divisionId         String?
+  division           Division?          @relation(fields: [divisionId], references: [id], onDelete: SetNull)
+  districtId         String?
+  district           District?          @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  upazilaId          String?
+  upazila            Upazila?           @relation(fields: [upazilaId], references: [id], onDelete: SetNull)
+  verificationStatus VerificationStatus @default(NOT_STARTED)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([divisionId])
+  @@index([districtId])
+  @@index([upazilaId])
+  @@map("user_profiles")
+}
+
+model Role {
+  id              String           @id @default(uuid())
+  name            String           @unique
+  displayName     String
+  description     String?
+  isSystem        Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id              String           @id @default(uuid())
+  code            String           @unique
+  name            String
+  description     String?
+  module          String
+  createdAt       DateTime         @default(now())
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId     String
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assignedAt DateTime @default(now())
+  assignedBy String?
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  assignedAt   DateTime   @default(now())
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model Division {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  bnName    String
+  code      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  districts District[]
+  profiles  UserProfile[]
+
+  @@map("divisions")
+}
+
+model District {
+  id         String     @id @default(uuid())
+  divisionId String
+  division   Division   @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  name       String
+  bnName     String
+  code       String     @unique
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  upazilas   Upazila[]
+  profiles   UserProfile[]
+
+  @@index([divisionId])
+  @@map("districts")
+}
+
+model Upazila {
+  id         String     @id @default(uuid())
+  districtId String
+  district   District   @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  name       String
+  bnName     String
+  code       String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  profiles   UserProfile[]
+
+  @@unique([districtId, name])
+  @@index([districtId])
+  @@map("upazilas")
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model FeatureFlag {
+  id                String   @id @default(uuid())
+  key               String   @unique
+  name              String
+  description       String?
+  isEnabled         Boolean  @default(false)
+  rolloutPercentage Int      @default(100)
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("feature_flags")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String?
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
