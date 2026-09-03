@@ -131,6 +131,15 @@ model User {
   jobApplications   JobApplication[]  @relation("ProviderApplications")
   savedJobs         SavedJob[]
   statusHistories   JobStatusHistory[]
+  customerBookings  Booking[]             @relation("CustomerBookings")
+  providerBookings  Booking[]             @relation("ProviderBookings")
+  customerWorkOrders WorkOrder[]          @relation("CustomerWorkOrders")
+  providerWorkOrders WorkOrder[]          @relation("ProviderWorkOrders")
+  rescheduleRequests BookingRescheduleRequest[]
+  cancellations     BookingCancellation[]
+  bookingHistories  BookingStatusHistory[]
+  workOrderHistories WorkOrderStatusHistory[]
+  progressUpdates   ServiceProgressUpdate[]
 
   @@index([email])
   @@index([phone])
@@ -561,6 +570,7 @@ model Job {
   applications          JobApplication[]
   statusHistories       JobStatusHistory[]
   savedBy               SavedJob[]
+  booking               Booking?
 
   @@index([customerId])
   @@index([status])
@@ -585,6 +595,8 @@ model JobApplication {
   isShortlisted    Boolean           @default(false)
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+
+  bookings         Booking[]
 
   @@unique([jobId, providerId])
   @@index([jobId])
@@ -622,4 +634,228 @@ model SavedJob {
   @@index([jobId])
   @@map("saved_jobs")
 }
+
+enum BookingStatus {
+  PENDING_CONFIRMATION
+  CONFIRMED
+  SCHEDULED
+  RESCHEDULE_REQUESTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED_FUTURE
+  ARCHIVED
+}
+
+enum WorkOrderStatus {
+  CREATED
+  ASSIGNED
+  SCHEDULED
+  EN_ROUTE_FUTURE
+  ARRIVED
+  STARTED
+  PAUSED
+  COMPLETED_BY_PROVIDER
+  CONFIRMED_BY_CUSTOMER
+  CLOSED
+  CANCELLED
+}
+
+enum RescheduleStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum CancellationReason {
+  CUSTOMER_CHANGED_MIND
+  PROVIDER_UNAVAILABLE
+  SCHEDULE_CONFLICT
+  SERVICE_NO_LONGER_NEEDED
+  PRICE_DISAGREEMENT
+  DUPLICATE_REQUEST
+  OTHER
+}
+
+enum LocationAccessState {
+  LOCATION_HIDDEN
+  LOCATION_AVAILABLE
+  LOCATION_REVEALED
+}
+
+model Booking {
+  id                  String              @id @default(uuid())
+  bookingReference    String              @unique
+  jobId               String              @unique
+  job                 Job                 @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicationId       String
+  application         JobApplication      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  customerId          String
+  customer            User                @relation("CustomerBookings", fields: [customerId], references: [id], onDelete: Cascade)
+  providerId          String
+  provider            User                @relation("ProviderBookings", fields: [providerId], references: [id], onDelete: Cascade)
+  status              BookingStatus       @default(PENDING_CONFIRMATION)
+  agreedPrice         Decimal             @db.Decimal(10, 2)
+  generalArea         String
+  privateAddress      String?
+  locationAccessState LocationAccessState @default(LOCATION_HIDDEN)
+  scheduledDate       String?
+  scheduledTime       String?
+  durationNotes       String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  confirmedAt         DateTime?
+  startedAt           DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+
+  workOrder           WorkOrder?
+  schedules           BookingSchedule[]
+  rescheduleRequests  BookingRescheduleRequest[]
+  cancellation        BookingCancellation?
+  statusHistories     BookingStatusHistory[]
+  progressUpdates     ServiceProgressUpdate[]
+
+  @@index([customerId])
+  @@index([providerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("bookings")
+}
+
+model BookingSchedule {
+  id           String   @id @default(uuid())
+  bookingId    String
+  booking      Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  proposedDate String
+  proposedTime String
+  isFlexible   Boolean  @default(false)
+  notes        String?
+  proposedById String
+  isAccepted   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([bookingId])
+  @@map("booking_schedules")
+}
+
+model BookingRescheduleRequest {
+  id            String           @id @default(uuid())
+  bookingId     String
+  booking       Booking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  requestedById String
+  requestedBy   User             @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+  currentDate   String?
+  currentTime   String?
+  proposedDate  String
+  proposedTime  String
+  reason        String
+  status        RescheduleStatus @default(PENDING)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([bookingId])
+  @@index([requestedById])
+  @@index([status])
+  @@map("booking_reschedule_requests")
+}
+
+model BookingCancellation {
+  id             String             @id @default(uuid())
+  bookingId      String             @unique
+  booking        Booking            @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  cancelledById  String
+  cancelledBy    User               @relation(fields: [cancelledById], references: [id], onDelete: Cascade)
+  reasonCategory CancellationReason
+  note           String?
+  previousStatus BookingStatus
+  createdAt      DateTime           @default(now())
+
+  @@index([bookingId])
+  @@index([cancelledById])
+  @@map("booking_cancellations")
+}
+
+model WorkOrder {
+  id                  String           @id @default(uuid())
+  workOrderReference  String           @unique
+  bookingId           String           @unique
+  booking             Booking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customerId          String
+  customer            User             @relation("CustomerWorkOrders", fields: [customerId], references: [id], onDelete: Cascade)
+  providerId          String
+  provider            User             @relation("ProviderWorkOrders", fields: [providerId], references: [id], onDelete: Cascade)
+  status              WorkOrderStatus  @default(CREATED)
+  scopeSummary        String
+  agreedPrice         Decimal          @db.Decimal(10, 2)
+  startedAt           DateTime?
+  providerCompletedAt DateTime?
+  customerConfirmedAt DateTime?
+  closedAt            DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  statusHistories     WorkOrderStatusHistory[]
+  progressUpdates     ServiceProgressUpdate[]
+
+  @@index([customerId])
+  @@index([providerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("work_orders")
+}
+
+model BookingStatusHistory {
+  id          String        @id @default(uuid())
+  bookingId   String
+  booking     Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  fromStatus  BookingStatus
+  toStatus    BookingStatus
+  changedById String?
+  changedBy   User?         @relation(fields: [changedById], references: [id], onDelete: SetNull)
+  reason      String?
+  createdAt   DateTime      @default(now())
+
+  @@index([bookingId])
+  @@index([createdAt])
+  @@map("booking_status_histories")
+}
+
+model WorkOrderStatusHistory {
+  id          String          @id @default(uuid())
+  workOrderId String
+  workOrder   WorkOrder       @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  fromStatus  WorkOrderStatus
+  toStatus    WorkOrderStatus
+  changedById String?
+  changedBy   User?           @relation(fields: [changedById], references: [id], onDelete: SetNull)
+  reason      String?
+  createdAt   DateTime        @default(now())
+
+  @@index([workOrderId])
+  @@index([createdAt])
+  @@map("work_order_status_histories")
+}
+
+model ServiceProgressUpdate {
+  id          String          @id @default(uuid())
+  bookingId   String
+  booking     Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  workOrderId String?
+  workOrder   WorkOrder?      @relation(fields: [workOrderId], references: [id], onDelete: SetNull)
+  createdById String
+  createdBy   User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  status      WorkOrderStatus
+  title       String
+  note        String?
+  images      String[]        @default([])
+  createdAt   DateTime        @default(now())
+
+  @@index([bookingId])
+  @@index([workOrderId])
+  @@index([createdAt])
+  @@map("service_progress_updates")
+}
+
 

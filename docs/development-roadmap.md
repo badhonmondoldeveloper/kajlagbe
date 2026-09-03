@@ -72,11 +72,16 @@ This document defines the 12-module roadmap to construct the full KajLagbe platf
 
 ---
 
-### MODULE 07 — Job & Booking Engine
-- On-demand instant booking engine vs scheduled booking engine
-- Custom job tender bidding system (providers submit quotes with itemized labor & materials)
-- Rescheduling, cancellation, and refund state machines
-- Technician dispatch and company team assignment system
+### MODULE 07 — Advanced Booking, Work Order & Service Management System (Completed)
+- Atomic Booking Creation: Automatically converts selected job applications into structured Bookings (`BK-2026-XXXX`)
+- Provider Availability Confirmation: Transitions booking to `CONFIRMED`, unlocks private customer location (`LOCATION_REVEALED`), and auto-creates Work Order (`WO-2026-XXXX`)
+- Controlled Location Privacy: Hides private customer address (`LOCATION_HIDDEN`) until booking confirmation
+- Service Execution Controls: Provider starts work (`IN_PROGRESS`), posts real-time progress updates, and marks work completed (`COMPLETED_BY_PROVIDER`)
+- Customer Completion Confirmation: Customer reviews work, confirms completion (`CONFIRMED_BY_CUSTOMER` -> `CLOSED` & Booking -> `COMPLETED`), writing audit & activity records
+- Reschedule & Cancellation Workflows: Structured reschedule requests between customer & provider with status tracking and reason-based cancellations
+- Customer & Provider Portals: `/customer/bookings`, `/customer/bookings/[id]`, `/provider/bookings`, `/provider/bookings/[id]`, `/provider/schedule`
+- Extended Prisma Schema: `Booking`, `WorkOrder`, `BookingSchedule`, `BookingRescheduleRequest`, `BookingCancellation`, `BookingStatusHistory`, `WorkOrderStatusHistory`, `ServiceProgressUpdate`
+- NestJS API Modules: `BookingsModule` and `WorkOrdersModule` with `BookingStatusTransitionService` state machine validation
 
 ---
 

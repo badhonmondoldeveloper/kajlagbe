@@ -26,9 +26,32 @@ import { ProfileCompletionCard } from '../../../components/dashboard/profile-com
 import { DashboardStatusBanner } from '../../../components/dashboard/dashboard-status-banner';
 import { useAuth } from '../../../context/auth-context';
 
+import { createClient } from '../../../lib/supabase/client';
+
 export default function ProviderDashboardPage() {
   const { user, profile, role } = useAuth();
   const [availability, setAvailability] = React.useState<'available' | 'busy' | 'away'>('available');
+  const [activeBookingCount, setActiveBookingCount] = React.useState(0);
+  const [completedBookingCount, setCompletedBookingCount] = React.useState(0);
+  const supabase = React.useMemo(() => createClient(), []);
+
+  React.useEffect(() => {
+    if (!user?.id) return;
+    const userId = user.id;
+    async function loadStats() {
+      try {
+        const [activeRes, completedRes] = await Promise.all([
+          supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('providerId', userId).in('status', ['PENDING_CONFIRMATION', 'CONFIRMED', 'SCHEDULED', 'IN_PROGRESS']),
+          supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('providerId', userId).eq('status', 'COMPLETED'),
+        ]);
+        setActiveBookingCount(activeRes.count || 0);
+        setCompletedBookingCount(completedRes.count || 0);
+      } catch {
+        // Ignored
+      }
+    }
+    loadStats();
+  }, [user, supabase]);
 
   const userName = profile?.profile?.firstName || user?.user_metadata?.full_name?.split(' ')[0] || 'প্রোভাইডার';
 
@@ -95,14 +118,14 @@ export default function ProviderDashboardPage() {
           />
           <DashboardStatCard
             title="চলমান বুকিং"
-            value={0}
+            value={activeBookingCount}
             subtitle="নির্ধারিত সার্ভিস অর্ডার"
             icon={Calendar}
             variant="sky"
           />
           <DashboardStatCard
             title="সম্পন্ন কাজ"
-            value={0}
+            value={completedBookingCount}
             subtitle="সফলভাবে সমাপ্ত"
             icon={CheckCircle2}
             variant="default"

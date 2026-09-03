@@ -35,6 +35,7 @@ import { JobsModule } from './modules/jobs';
 import { ApplicationsModule } from './modules/applications';
 import { QuotationsModule } from './modules/quotations';
 import { BookingsModule } from './modules/bookings';
+import { WorkOrdersModule } from './modules/work-orders/work-orders.module';
 import { ReviewsModule } from './modules/reviews';
 import { MessagesModule } from './modules/messages';
 import { NotificationsModule } from './modules/notifications';
@@ -98,6 +99,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     ApplicationsModule,
     QuotationsModule,
     BookingsModule,
+    WorkOrdersModule,
     ReviewsModule,
     MessagesModule,
     NotificationsModule,

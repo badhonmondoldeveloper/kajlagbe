@@ -25,9 +25,32 @@ import { DashboardStatusBanner } from '../../../components/dashboard/dashboard-s
 import { useAuth } from '../../../context/auth-context';
 import { CATEGORIES } from '../../../data';
 
+import { createClient } from '../../../lib/supabase/client';
+
 export default function CustomerDashboardPage() {
   const { user, profile, role } = useAuth();
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [activeBookingCount, setActiveBookingCount] = React.useState(0);
+  const [completedBookingCount, setCompletedBookingCount] = React.useState(0);
+  const supabase = React.useMemo(() => createClient(), []);
+
+  React.useEffect(() => {
+    if (!user?.id) return;
+    const userId = user.id;
+    async function loadStats() {
+      try {
+        const [activeRes, completedRes] = await Promise.all([
+          supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('customerId', userId).in('status', ['PENDING_CONFIRMATION', 'CONFIRMED', 'SCHEDULED', 'IN_PROGRESS']),
+          supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('customerId', userId).eq('status', 'COMPLETED'),
+        ]);
+        setActiveBookingCount(activeRes.count || 0);
+        setCompletedBookingCount(completedRes.count || 0);
+      } catch {
+        // Ignored
+      }
+    }
+    loadStats();
+  }, [user, supabase]);
 
   const userName = profile?.profile?.firstName || user?.user_metadata?.full_name?.split(' ')[0] || 'গ্রাহক';
 
@@ -86,15 +109,15 @@ export default function CustomerDashboardPage() {
             variant="emerald"
           />
           <DashboardStatCard
-            title="আসন্ন বুকিং"
-            value={0}
-            subtitle="শিডিউল করা সার্ভিস"
+            title="আসন্ন ও চলমান বুকিং"
+            value={activeBookingCount}
+            subtitle="শিডিউলকৃত সার্ভিস অর্ডার"
             icon={Calendar}
             variant="sky"
           />
           <DashboardStatCard
             title="সম্পন্ন সেবা"
-            value={0}
+            value={completedBookingCount}
             subtitle="সফলভাবে সম্পন্ন"
             icon={CheckCircle2}
             variant="default"

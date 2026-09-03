@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { JobStatusTransitionService } from './jobs-transition.service';
+import { BookingsService } from '../bookings/bookings.service';
 import {
   CreateJobApiDto,
   UpdateJobApiDto,
@@ -30,6 +31,7 @@ export class JobsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly transitionService: JobStatusTransitionService,
+    private readonly bookingsService: BookingsService,
   ) {}
 
   /**
@@ -263,6 +265,19 @@ export class JobsService {
           link: `/provider/applications/${targetApp.id}`,
         },
       });
+
+      // Create Booking record
+      await this.bookingsService.createBookingFromJobSelection(
+        userId,
+        job.id,
+        targetApp.id,
+        targetApp.providerId,
+        Number(targetApp.proposedPrice),
+        job.generalArea,
+        job.privateAddress || undefined,
+        job.preferredDate || undefined,
+        job.preferredTime || undefined,
+      );
 
       return updatedJob;
     });

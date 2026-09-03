@@ -4,3 +4,4 @@ export * from './user';
 export * from './location';
 export * from './dashboard';
 export * from './jobs';
+export * from './bookings';

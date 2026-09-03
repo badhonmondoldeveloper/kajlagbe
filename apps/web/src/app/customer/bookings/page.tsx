@@ -11,19 +11,17 @@ import {
   Search,
   ChevronRight,
   ShieldCheck,
-  User,
-  Wrench,
-  Play,
-  Check,
+  UserCheck,
+  FileText,
 } from 'lucide-react';
 import { Button, Input, Badge } from '@kajlagbe/ui';
 import { DashboardLayout } from '../../../components/dashboard/dashboard-layout';
 import { DashboardEmptyState } from '../../../components/dashboard/dashboard-empty-state';
 import { useAuth } from '../../../context/auth-context';
 import { createClient } from '../../../lib/supabase/client';
-import { BookingStatus, WorkOrderStatus, LocationAccessState } from '@kajlagbe/types';
+import { BookingStatus, LocationAccessState } from '@kajlagbe/types';
 
-export default function ProviderBookingsPage() {
+export default function CustomerBookingsPage() {
   const { user } = useAuth();
   const supabase = React.useMemo(() => createClient(), []);
 
@@ -41,13 +39,14 @@ export default function ProviderBookingsPage() {
         .select(`
           *,
           job:jobs(id, title, categorySlug),
-          customer:users!bookings_customerId_fkey(
+          provider:users!bookings_providerId_fkey(
             id, email, phone,
-            profile:user_profiles(firstName, lastName, avatarUrl)
+            profile:user_profiles(firstName, lastName, avatarUrl),
+            providerProfile:provider_profiles(primaryCategory, experienceYears)
           ),
           workOrder:work_orders(id, workOrderReference, status)
         `)
-        .eq('providerId', user.id)
+        .eq('customerId', user.id)
         .order('createdAt', { ascending: false });
 
       if (activeTab !== 'ALL') {
@@ -87,39 +86,39 @@ export default function ProviderBookingsPage() {
       case BookingStatus.SCHEDULED:
         return <Badge variant="info">কনফার্মড ও শিডিউলড</Badge>;
       case BookingStatus.RESCHEDULE_REQUESTED:
-        return <Badge variant="warning">সময়সূচী পরিবর্তনের আবেদন</Badge>;
+        return <Badge variant="warning">সময়সূচী পরিবর্তন প্রস্তাবিত</Badge>;
       case BookingStatus.IN_PROGRESS:
-        return <Badge variant="info">চলমান কাজ</Badge>;
+        return <Badge variant="info">চলমান কাজ (In Progress)</Badge>;
       case BookingStatus.COMPLETED:
-        return <Badge variant="success">সম্পন্ন কাজ</Badge>;
+        return <Badge variant="success">সম্পন্ন সেবা</Badge>;
       case BookingStatus.CANCELLED:
-        return <Badge variant="error">বাতিল</Badge>;
+        return <Badge variant="error">বাতিলকৃত</Badge>;
       default:
         return <Badge variant="default">{status}</Badge>;
     }
   };
 
   const tabs = [
-    { key: 'ALL', label: 'সব কাজ' },
-    { key: BookingStatus.PENDING_CONFIRMATION, label: 'কনফার্মেশন চাই' },
-    { key: BookingStatus.CONFIRMED, label: 'শিডিউলকৃত' },
-    { key: BookingStatus.IN_PROGRESS, label: 'চলমান' },
+    { key: 'ALL', label: 'সব বুকিং' },
+    { key: BookingStatus.PENDING_CONFIRMATION, label: 'পেন্ডিং' },
+    { key: BookingStatus.CONFIRMED, label: 'কনফার্মড' },
+    { key: BookingStatus.IN_PROGRESS, label: 'চলমান কাজ' },
     { key: BookingStatus.COMPLETED, label: 'সম্পন্ন' },
     { key: BookingStatus.CANCELLED, label: 'বাতিল' },
   ];
 
   return (
     <DashboardLayout
-      title="প্রোভাইডার বুকিং ও সার্ভিস কন্ট্রোল"
-      subtitle="আপনার গ্রাহকদের বুকিং নিশ্চিত করুন, কাজ শুরু করুন ও অগ্রগতি ট্র্যাকিং করুন"
+      title="আমার সার্ভিস বুকিংসমূহ"
+      subtitle="আপনার সমস্ত বুকিং, শিডিউল ও সার্ভিস অর্ডার ট্র্যাকিং"
     >
       <div className="space-y-6">
-        {/* Top Controls */}
+        {/* Search & Filter Header */}
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 sm:p-6 rounded-3xl border border-slate-200/90 shadow-xs">
           <div className="relative w-full sm:w-80">
             <Input
               type="search"
-              placeholder="রেফারেন্স বা কাজ দিয়ে খুঁজুন..."
+              placeholder="বুকিং আইডি বা কাজ দিয়ে খুঁজুন..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               leftIcon={<Search className="h-4 w-4 text-slate-400" />}
@@ -157,29 +156,25 @@ export default function ProviderBookingsPage() {
         ) : filteredBookings.length === 0 ? (
           <DashboardEmptyState
             icon={Calendar}
-            title="কোনো সার্ভিস বুকিং নেই"
-            description="বর্তমানে আপনার কোনো পেন্ডিং বা শিডিউল করা বুকিং নেই।"
-            actionText="কাজের বাজার দেখুন"
-            actionHref="/jobs"
+            title="কোনো বুকিং পাওয়া যায়নি"
+            description="আপনার নির্বাচিত ফিল্টারে কোনো সার্ভিস বুকিং রেকর্ড নেই।"
+            actionText="নতুন সেবা বুক করুন"
+            actionHref="/services"
+            secondaryActionText="কাজ পোস্ট করুন"
+            secondaryActionHref="/post-job"
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {filteredBookings.map((b) => {
-              const customerName =
-                b.customer?.profile?.firstName && b.customer?.profile?.lastName
-                  ? `${b.customer.profile.firstName} ${b.customer.profile.lastName}`
-                  : b.customer?.profile?.firstName || 'গ্রাহক';
-
-              const isPendingConfirm = b.status === BookingStatus.PENDING_CONFIRMATION;
+              const providerName =
+                b.provider?.profile?.firstName && b.provider?.profile?.lastName
+                  ? `${b.provider.profile.firstName} ${b.provider.profile.lastName}`
+                  : b.provider?.profile?.firstName || 'প্রোভাইডার';
 
               return (
                 <div
                   key={b.id}
-                  className={`rounded-3xl border p-5 sm:p-6 transition flex flex-col justify-between ${
-                    isPendingConfirm
-                      ? 'border-amber-300 bg-amber-50/40 shadow-sm'
-                      : 'border-slate-200/90 bg-white hover:border-emerald-400 hover:shadow-md'
-                  }`}
+                  className="rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 hover:border-emerald-400 hover:shadow-md transition flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
@@ -195,8 +190,8 @@ export default function ProviderBookingsPage() {
 
                     <div className="flex items-center gap-3 text-xs text-slate-600">
                       <div className="flex items-center gap-1 font-medium">
-                        <User className="h-3.5 w-3.5 text-sky-600" />
-                        <span>গ্রাহক: {customerName}</span>
+                        <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
+                        <span>{providerName}</span>
                       </div>
                       <span>•</span>
                       <div className="font-bold text-emerald-700">
@@ -207,11 +202,11 @@ export default function ProviderBookingsPage() {
                     <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs text-slate-500">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                        <span>{b.scheduledDate || 'তারিখ পেন্ডিং'}</span>
+                        <span>{b.scheduledDate || 'তারিখ নির্ধারিত হয়নি'}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5 text-slate-400" />
-                        <span>{b.scheduledTime || 'সময় পেন্ডিং'}</span>
+                        <span>{b.scheduledTime || 'সময়সূচী পেন্ডিং'}</span>
                       </div>
                     </div>
                   </div>
@@ -224,16 +219,9 @@ export default function ProviderBookingsPage() {
                       </span>
                     </div>
 
-                    <Link href={`/provider/bookings/${b.id}`}>
-                      <Button
-                        size="sm"
-                        className={
-                          isPendingConfirm
-                            ? 'bg-amber-600 hover:bg-amber-700 text-white font-bold gap-1 text-xs'
-                            : 'variant-outline gap-1 text-xs'
-                        }
-                      >
-                        <span>{isPendingConfirm ? 'কনফার্ম করুন' : 'কন্ট্রোল প্যানেল'}</span>
+                    <Link href={`/customer/bookings/${b.id}`}>
+                      <Button size="sm" variant="outline" className="gap-1 text-xs">
+                        <span>বিস্তারিত ট্র্যাকিং</span>
                         <ChevronRight className="h-3.5 w-3.5" />
                       </Button>
                     </Link>
