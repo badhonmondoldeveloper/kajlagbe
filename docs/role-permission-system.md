@@ -91,3 +91,4 @@ async listAllUsers() {
   // Protected endpoint
 }
 ```
+

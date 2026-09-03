@@ -83,3 +83,4 @@ All Bangladeshi phone inputs (e.g. `01712345678`, `+8801712345678`, `88017123456
 - **No Plaintext Passwords**: Password hashing is delegated to Supabase Auth.
 - **Zero Exposed Secrets**: `SUPABASE_SECRET_KEY` and `DATABASE_URL` are strictly confined to backend execution environments.
 - **Audit Logging**: Sensitive actions (`SIGNUP_SUCCESS`, `LOGIN_SUCCESS`, `ONBOARDING_COMPLETED`, `PROVIDER_ONBOARDING_SUBMITTED`, etc.) are recorded in the PostgreSQL `audit_logs` table with timestamp, IP address, and user agent metadata.
+

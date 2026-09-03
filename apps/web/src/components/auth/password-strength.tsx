@@ -34,3 +34,4 @@ export function PasswordStrengthIndicator({ password }: { password: string }) {
     </div>
   );
 }
+

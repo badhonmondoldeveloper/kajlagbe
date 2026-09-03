@@ -47,17 +47,20 @@ This document defines the 12-module roadmap to construct the full KajLagbe platf
 
 ---
 
-### MODULE 05 — Provider System & KYC Engine
-- Provider console with real-time job radar
-- National ID (NID) & trade license verification workflow with OCR / manual review
-- Service catalog creator with custom pricing and add-ons
-- Working zones / coverage radius selection (Division > District > Upazila)
-- Provider portfolio gallery and verified badge display
-- Subscription management & bidding credits balance
+### MODULE 05 — Complete Multi-Role Dashboard System (Completed)
+- Central Smart Role Router: `/dashboard` with authorized role resolution
+- Dedicated Workspaces:
+  - Customer Portal: `/customer/dashboard`, `/customer/profile`, `/customer/saved`, `/customer/activity`, `/customer/settings`
+  - Individual Provider Console: `/provider/dashboard`, `/provider/profile`, `/provider/services`, `/provider/portfolio`, `/provider/availability`, `/provider/reviews`, `/provider/performance`, `/provider/earnings`, `/provider/settings`
+  - Business Agency Console: `/business/dashboard`, `/business/profile`, `/business/services`, `/business/team`, `/business/locations`, `/business/analytics`, `/business/settings`
+  - Shared Hubs & Protected Placeholders: `/notifications`, `/account/*`, `/support`, `/moderator`
+- Extended Prisma Schema: `Notification`, `UserActivity`, `ProviderService`, `ProviderPortfolio`, `ProviderAvailability`, `BusinessService`, `BusinessLocation`, `BusinessTeamMember`, `SavedProvider`
+- NestJS `DashboardModule` with endpoints for stats, notifications, activity feeds, provider services, availability, and business teams with strict ownership enforcement
+- Shared Dashboard UI System: `DashboardLayout`, `DashboardSidebar`, `DashboardHeader`, `DashboardMobileNav`, `DashboardStatCard`, `DashboardEmptyState`, `ProfileCompletionCard`, `DashboardStatusBanner`
 
 ---
 
-### MODULE 06 — Customer Dashboard
+### MODULE 06 — Customer Dashboard & Marketplace Experience
 - Unified booking management (Pending, Accepted, In-Progress, Completed, Cancelled)
 - Custom job request creator (budget, location, photos, urgency)
 - Provider comparison & quotation acceptance

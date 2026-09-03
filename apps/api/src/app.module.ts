@@ -53,6 +53,7 @@ import { AdminModule } from './modules/admin';
 import { SettingsModule } from './modules/settings';
 import { FeatureFlagsModule } from './modules/feature-flags';
 import { AuditLogsModule } from './modules/audit-logs';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { AuditLogsModule } from './modules/audit-logs';
 
     // All Domain Modules
     AuthModule,
+    DashboardModule,
     UsersModule,
     RolesModule,
     PermissionsModule,
@@ -143,4 +145,3 @@ import { AuditLogsModule } from './modules/audit-logs';
   ],
 })
 export class AppModule {}
-

@@ -65,3 +65,4 @@ export function validatePasswordStrength(password: string): PasswordStrength {
     feedback,
   };
 }
+
