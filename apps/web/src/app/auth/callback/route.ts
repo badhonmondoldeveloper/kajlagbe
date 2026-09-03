@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { sanitizeRedirectPath } from '@kajlagbe/utils';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const error = searchParams.get('error');
   const error_description = searchParams.get('error_description');
-  const next = searchParams.get('redirectTo') || searchParams.get('next') || '/dashboard';
+  const rawNext = searchParams.get('redirectTo') || searchParams.get('next');
+  const next = sanitizeRedirectPath(rawNext, '/dashboard');
 
   // Handle Supabase OAuth errors in redirect query
   if (error || error_description) {

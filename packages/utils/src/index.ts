@@ -4,3 +4,4 @@ export * from './pagination';
 export * from './object';
 export * from './phone';
 export * from './auth';
+export * from './redirect';

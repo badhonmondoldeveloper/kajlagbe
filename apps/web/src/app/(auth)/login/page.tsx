@@ -18,14 +18,15 @@ import {
   RotateCw,
 } from 'lucide-react';
 import { Button, Input, Badge } from '@kajlagbe/ui';
+import { sanitizeRedirectPath } from '@kajlagbe/utils';
 import { AuthCard } from '../../../components/auth/auth-card';
 import { useAuth } from '../../../context/auth-context';
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const rawRedirect = searchParams.get('redirectTo') || searchParams.get('next') || '/';
-  const redirectTo = (rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')) ? rawRedirect : '/dashboard';
+  const rawRedirect = searchParams.get('redirectTo') || searchParams.get('next');
+  const redirectTo = sanitizeRedirectPath(rawRedirect, '/dashboard');
 
   const {
     signIn,

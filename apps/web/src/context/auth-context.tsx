@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const supabase = React.useMemo(() => createClient(), []);
 
-  // Fetch or sync user profile
+  // Fetch or sync user profile with database
   const fetchProfile = React.useCallback(async (authUser: User) => {
     try {
       const meta = authUser.user_metadata || {};
@@ -72,28 +72,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const fallbackName = meta.full_name || meta.name || 'ব্যবহারকারী';
       const [firstName, ...lastNameParts] = fallbackName.split(' ');
 
-      const defaultProfile: UserProfileData = {
-        id: authUser.id,
-        email: authUser.email || '',
-        phone: authUser.phone || meta.phone || null,
-        status: authUser.email_confirmed_at ? UserStatus.ACTIVE : UserStatus.PENDING_EMAIL_VERIFICATION,
-        onboardingStatus: meta.onboardingStatus || OnboardingStatus.NOT_STARTED,
-        isEmailVerified: !!authUser.email_confirmed_at,
-        isPhoneVerified: !!authUser.phone_confirmed_at,
-        roles: [fallbackRole],
-        primaryRole: fallbackRole,
-        profile: {
-          firstName: firstName || 'ব্যবহারকারী',
-          lastName: lastNameParts.join(' ') || '',
-          avatarUrl: meta.avatar_url || null,
-        },
-      };
+      // Query database user record
+      const { data: dbUser } = await supabase
+        .from('users')
+        .select(`
+          *,
+          profile:user_profiles(*),
+          customerProfile:customer_profiles(*),
+          providerProfile:provider_profiles(*),
+          businessProfile:business_profiles(*)
+        `)
+        .eq('id', authUser.id)
+        .maybeSingle();
 
-      setProfile(defaultProfile);
+      if (dbUser) {
+        setProfile({
+          id: dbUser.id,
+          email: dbUser.email,
+          phone: dbUser.phone || authUser.phone || meta.phone || null,
+          status: dbUser.status || (authUser.email_confirmed_at ? UserStatus.ACTIVE : UserStatus.PENDING_EMAIL_VERIFICATION),
+          onboardingStatus: dbUser.onboardingStatus || meta.onboardingStatus || OnboardingStatus.NOT_STARTED,
+          isEmailVerified: dbUser.isEmailVerified || !!authUser.email_confirmed_at,
+          isPhoneVerified: dbUser.isPhoneVerified || !!authUser.phone_confirmed_at,
+          roles: [fallbackRole],
+          primaryRole: fallbackRole,
+          profile: dbUser.profile ? {
+            firstName: dbUser.profile.firstName,
+            lastName: dbUser.profile.lastName,
+            avatarUrl: dbUser.profile.avatarUrl || meta.avatar_url || null,
+            bio: dbUser.profile.bio || null,
+          } : {
+            firstName: firstName || 'ব্যবহারকারী',
+            lastName: lastNameParts.join(' ') || '',
+            avatarUrl: meta.avatar_url || null,
+          },
+          customerProfile: dbUser.customerProfile,
+          providerProfile: dbUser.providerProfile,
+          businessProfile: dbUser.businessProfile,
+        });
+      } else {
+        // Recovery / Fallback profile provisioning
+        const defaultProfile: UserProfileData = {
+          id: authUser.id,
+          email: authUser.email || '',
+          phone: authUser.phone || meta.phone || null,
+          status: authUser.email_confirmed_at ? UserStatus.ACTIVE : UserStatus.PENDING_EMAIL_VERIFICATION,
+          onboardingStatus: meta.onboardingStatus || OnboardingStatus.NOT_STARTED,
+          isEmailVerified: !!authUser.email_confirmed_at,
+          isPhoneVerified: !!authUser.phone_confirmed_at,
+          roles: [fallbackRole],
+          primaryRole: fallbackRole,
+          profile: {
+            firstName: firstName || 'ব্যবহারকারী',
+            lastName: lastNameParts.join(' ') || '',
+            avatarUrl: meta.avatar_url || null,
+          },
+        };
+
+        setProfile(defaultProfile);
+      }
     } catch {
       // Fallback
     }
-  }, []);
+  }, [supabase]);
 
   React.useEffect(() => {
     let mounted = true;
