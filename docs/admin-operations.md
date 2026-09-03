@@ -20,3 +20,4 @@
 ### 4. Feature Flag Governance
 - Toggle platform features (`CHAT_ENABLED`, `PAYMENT_ENABLED`, `PROVIDER_REGISTRATION_ENABLED`, `MAINTENANCE_MODE`) dynamically.
 - All toggles log an immutable record to `AuditLog`.
+

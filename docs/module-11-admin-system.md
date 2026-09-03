@@ -33,3 +33,4 @@ Module 11 introduces a production-ready, highly secure, scalable Admin Master Co
 
 ### 5. Feature Flags & Immutable Audit Trail (`/admin/feature-flags` & `/admin/audit-logs`)
 - Dynamic feature toggles (`CHAT_ENABLED`, `PAYMENT_ENABLED`, `PROVIDER_REGISTRATION_ENABLED`, `MAINTENANCE_MODE`) and an unalterable audit log browser.
+

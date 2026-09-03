@@ -17,3 +17,4 @@
 1. **NestJS API Level**: `@Roles('ADMIN', 'SUPER_ADMIN')` coupled with `RolesGuard` and `SupabaseAuthGuard`.
 2. **Next.js Middleware Level**: Route protection intercepts `/admin` routes.
 3. **Audit Trail**: Every administrative mutation creates an `AuditLog` record containing `userId`, `action`, `entityType`, `entityId`, and `metadata`.
+
