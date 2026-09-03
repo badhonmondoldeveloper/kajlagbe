@@ -4,7 +4,7 @@ This document defines the 12-module roadmap to construct the full KajLagbe platf
 
 ---
 
-### MODULE 01 — Foundation (Current)
+### MODULE 01 — Foundation (Completed)
 - Monorepo setup with Turborepo and pnpm workspaces
 - Shared packages: `config`, `types`, `utils`, `database`, `ui`
 - NestJS API foundation with 30+ modular domains, health check, global filters & interceptors
@@ -14,7 +14,7 @@ This document defines the 12-module roadmap to construct the full KajLagbe platf
 
 ---
 
-### MODULE 02 — Premium Design System
+### MODULE 02 — Premium Design System (Completed)
 - Full branding & UI kit with Tailwind CSS & shadcn/ui
 - Bengali & English typography (Hind Siliguri / Inter)
 - Theme system (light/dark mode support)
@@ -35,14 +35,15 @@ This document defines the 12-module roadmap to construct the full KajLagbe platf
 
 ---
 
-### MODULE 04 — Authentication & Multi-Role Onboarding
-- JWT access and refresh token rotation architecture
-- Phone OTP authentication (Bangladeshi SMS Gateway integration)
-- Google OAuth & Email/Password sign in
-- Role-specific onboarding:
-  - Customer profile setup
-  - Individual provider skill & equipment registration
-  - Service company registration with trade license & tax certificate upload
+### MODULE 04 — Authentication & Multi-Role Onboarding (Completed)
+- Supabase Auth integration with secure HTTP-only cookies and token rotation via `@supabase/ssr`
+- Prisma database models: `CustomerProfile`, `ProviderProfile`, `BusinessProfile`, `OnboardingStatus`
+- Bangladeshi phone normalization (`normalizeBangladeshiPhone`) and OTP abstraction
+- Role enforcement: Public registration strictly limited to `CUSTOMER`, `INDIVIDUAL_PROVIDER`, `BUSINESS`
+- Complete Auth Routes: `/login`, `/signup`, `/signup/customer`, `/signup/provider`, `/signup/business`, `/forgot-password`, `/reset-password`, `/verify-email`, `/auth/callback`, `/logout`, `/account-pending`
+- Progressive Onboarding: `/onboarding/customer`, `/onboarding/provider`, `/onboarding/business`
+- Account Security Center Foundation: `/settings/security` (password change, active sessions, audit activity)
+- NestJS JWT authorization guard (`SupabaseAuthGuard`), `RolesGuard`, and `AuthService` sync endpoints
 
 ---
 
@@ -114,4 +115,3 @@ This document defines the 12-module roadmap to construct the full KajLagbe platf
 - PostgreSQL connection pooling (PgBouncer) & Redis cluster caching
 - S3 / Cloudflare R2 object storage for uploads
 - CDN configuration and performance optimization
-

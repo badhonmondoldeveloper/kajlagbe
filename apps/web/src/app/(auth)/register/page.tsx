@@ -1,12 +1,7 @@
-import { RoutePlaceholder } from "@/components/placeholders/route-placeholder";
+'use client';
 
-export default function CreateAccountPage() {
-  return (
-    <RoutePlaceholder
-      title="Create Account"
-      category="Authentication"
-      moduleTarget="Module 04"
-      description="Sign up as a customer, individual provider, or registered service company."
-    />
-  );
+import SignupRoleSelectionPage from '../signup/page';
+
+export default function RegisterPage() {
+  return <SignupRoleSelectionPage />;
 }

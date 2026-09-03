@@ -1,30 +1,24 @@
-export enum RoleType {
-  SUPER_ADMIN = 'SUPER_ADMIN',
-  ADMIN = 'ADMIN',
-  OPERATIONS_MANAGER = 'OPERATIONS_MANAGER',
-  FINANCE_ADMIN = 'FINANCE_ADMIN',
-  VERIFICATION_OFFICER = 'VERIFICATION_OFFICER',
-  SUPPORT_AGENT = 'SUPPORT_AGENT',
-  CUSTOMER = 'CUSTOMER',
-  INDIVIDUAL_PROVIDER = 'INDIVIDUAL_PROVIDER',
-  BUSINESS = 'BUSINESS',
-  COMPANY_OWNER = 'COMPANY_OWNER',
-  COMPANY_MANAGER = 'COMPANY_MANAGER',
-  TEAM_MEMBER = 'TEAM_MEMBER',
-  MODERATOR = 'MODERATOR',
-  SUPPORT = 'SUPPORT',
-}
+# KajLagbe Role-Based Access Control (RBAC) & Permission System
 
-export const ALLOWED_PUBLIC_REGISTRATION_ROLES: RoleType[] = [
-  RoleType.CUSTOMER,
-  RoleType.INDIVIDUAL_PROVIDER,
-  RoleType.BUSINESS,
-];
+## 1. Role Taxonomy
 
-export function isAllowedPublicRole(role: string): boolean {
-  return (ALLOWED_PUBLIC_REGISTRATION_ROLES as string[]).includes(role);
-}
+| Role Type | Target Audience | Allowed Self-Registration | Primary Scope |
+| :--- | :--- | :---: | :--- |
+| `CUSTOMER` | Service Seekers & Households | **Yes** | Post jobs, hire providers, leave reviews, manage bookings. |
+| `INDIVIDUAL_PROVIDER` | Skilled Technicians & Craftsmen | **Yes** | Accept jobs, submit proposals, manage service schedule. |
+| `BUSINESS` | Service Companies & Agencies | **Yes** | Manage technician teams, assign jobs, corporate invoicing. |
+| `ADMIN` | Platform Administrators | **No** | Full operational control, user management, category settings. |
+| `SUPER_ADMIN` | System Architects | **No** | Full system administration, RBAC role assignments, feature flags. |
+| `SUPPORT_AGENT` / `SUPPORT` | Customer & Provider Support | **No** | Ticket management, user assistance, dispute handling. |
+| `MODERATOR` | Content & Review Moderators | **No** | Profile reviews, verification audits, comment moderation. |
 
+---
+
+## 2. Permission Foundation
+
+Granular permissions are organized by module:
+
+```typescript
 export enum PermissionType {
   // User Management
   USER_VIEW = 'USER_VIEW',
@@ -81,3 +75,19 @@ export enum PermissionType {
   AUDIT_LOG_VIEW = 'AUDIT_LOG_VIEW',
   ADMIN_ACCESS = 'ADMIN_ACCESS',
 }
+```
+
+---
+
+## 3. Server-Side Enforcement (NestJS)
+
+Frontend conditional rendering is solely for user experience. Authorization security boundaries are strictly enforced on backend endpoints via decorators and guards:
+
+```typescript
+@UseGuards(SupabaseAuthGuard, RolesGuard)
+@Roles(RoleType.ADMIN, RoleType.SUPER_ADMIN)
+@Get('admin/users')
+async listAllUsers() {
+  // Protected endpoint
+}
+```

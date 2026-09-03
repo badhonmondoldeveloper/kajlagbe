@@ -144,6 +144,12 @@ importers:
       '@kajlagbe/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@supabase/ssr':
+        specifier: ^0.12.5
+        version: 0.12.5(@supabase/supabase-js@2.114.0)
+      '@supabase/supabase-js':
+        specifier: ^2.114.0
+        version: 2.114.0
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -953,6 +959,11 @@ packages:
         optional: true
       pg:
         optional: true
+
+  '@supabase/ssr@0.12.5':
+    resolution: {integrity: sha512-0GllaAtHe7FHs6tlSg1CwkFw0a7aai1Shs9rEqSs/HaVkJzPk35C9r0Z8WUtKJ3eY6G/Y5y47YvCro3LynrAJg==}
+    peerDependencies:
+      '@supabase/supabase-js': ^2.112.4
 
   '@supabase/storage-js@2.114.0':
     resolution: {integrity: sha512-leK7YsDVqIKd9hQRJeK03QRZ8Slg2JExmNIj+BL7dkD3m+ZNREJ7ITQdrc7VhNhh8+Eb/ebm1Ts4AOoY4LFSiA==}
@@ -1863,6 +1874,10 @@ packages:
   cookie@0.7.2:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
+
+  cookie@1.1.1:
+    resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
+    engines: {node: '>=18'}
 
   cookiejar@2.1.4:
     resolution: {integrity: sha512-LDx6oHrK+PhzLKJU9j5S7/Y3jM/mUHvD/DeI1WQmJn652iPC5Y4TBzC9l+5OMOXlyTTA+SmVUPm0HQUwpD5Jqw==}
@@ -5150,6 +5165,11 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
+  '@supabase/ssr@0.12.5(@supabase/supabase-js@2.114.0)':
+    dependencies:
+      '@supabase/supabase-js': 2.114.0
+      cookie: 1.1.1
+
   '@supabase/storage-js@2.114.0':
     dependencies:
       iceberg-js: 0.8.1
@@ -6164,6 +6184,8 @@ snapshots:
   cookie-signature@1.2.2: {}
 
   cookie@0.7.2: {}
+
+  cookie@1.1.1: {}
 
   cookiejar@2.1.4: {}
 

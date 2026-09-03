@@ -9,9 +9,21 @@ datasource db {
 
 enum UserStatus {
   ACTIVE
-  INACTIVE
+  PENDING_EMAIL_VERIFICATION
+  PENDING_REVIEW
   SUSPENDED
+  RESTRICTED
+  DEACTIVATED
+  INACTIVE
   PENDING_VERIFICATION
+}
+
+enum OnboardingStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED_OPTIONAL
+  PENDING_REVIEW
 }
 
 enum VerificationStatus {
@@ -22,24 +34,37 @@ enum VerificationStatus {
   REJECTED
 }
 
+enum ProfileStatus {
+  DRAFT
+  PENDING_REVIEW
+  ACTIVE
+  SUSPENDED
+  REJECTED
+}
+
 model User {
-  id                String      @id @default(uuid())
-  email             String      @unique
-  phone             String?     @unique
+  id                String            @id @default(uuid())
+  email             String            @unique
+  phone             String?           @unique
   passwordHash      String?
-  status            UserStatus  @default(PENDING_VERIFICATION)
-  isEmailVerified   Boolean     @default(false)
-  isPhoneVerified   Boolean     @default(false)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  status            UserStatus        @default(PENDING_EMAIL_VERIFICATION)
+  onboardingStatus  OnboardingStatus  @default(NOT_STARTED)
+  isEmailVerified   Boolean           @default(false)
+  isPhoneVerified   Boolean           @default(false)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   profile           UserProfile?
+  customerProfile   CustomerProfile?
+  providerProfile   ProviderProfile?
+  businessProfile   BusinessProfile?
   userRoles         UserRole[]
   auditLogs         AuditLog[]
 
   @@index([email])
   @@index([phone])
   @@index([status])
+  @@index([onboardingStatus])
   @@map("users")
 }
 
@@ -66,6 +91,65 @@ model UserProfile {
   @@index([districtId])
   @@index([upazilaId])
   @@map("user_profiles")
+}
+
+model CustomerProfile {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preferredLocations  String[]  @default([])
+  serviceInterests    String[]  @default([])
+  allowNotifications  Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@map("customer_profiles")
+}
+
+model ProviderProfile {
+  id                  String        @id @default(uuid())
+  userId              String        @unique
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  primaryCategory     String
+  secondaryCategories String[]      @default([])
+  experienceYears     Int           @default(1)
+  bio                 String?
+  serviceLocation     String?
+  divisionId          String?
+  districtId          String?
+  skills              String[]      @default([])
+  servicesOffered     Json?
+  availabilityStatus  String        @default("available") // available, busy, away
+  status              ProfileStatus @default(PENDING_REVIEW)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([primaryCategory])
+  @@index([status])
+  @@map("provider_profiles")
+}
+
+model BusinessProfile {
+  id                  String        @id @default(uuid())
+  userId              String        @unique
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName        String
+  tradeLicenseNumber  String?
+  description         String?
+  categories          String[]      @default([])
+  teamSize            String        @default("1-5")
+  contactPhone        String?
+  contactEmail        String?
+  businessAddress     String?
+  divisionId          String?
+  districtId          String?
+  status              ProfileStatus @default(PENDING_REVIEW)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([businessName])
+  @@index([status])
+  @@map("business_profiles")
 }
 
 model Role {
@@ -219,4 +303,3 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
-
