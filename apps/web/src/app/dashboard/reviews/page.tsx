@@ -1,12 +1,7 @@
-import { RoutePlaceholder } from "@/components/placeholders/route-placeholder";
+'use client';
 
-export default function MyRatingsReviewsPage() {
-  return (
-    <RoutePlaceholder
-      title="My Ratings & Reviews"
-      category="Customer Dashboard"
-      moduleTarget="Module 06"
-      description="Review service providers and manage your feedback."
-    />
-  );
+import CustomerReviewsPage from '../../customer/reviews/page';
+
+export default function DashboardReviewsRoute() {
+  return <CustomerReviewsPage />;
 }

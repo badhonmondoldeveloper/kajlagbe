@@ -1,12 +1,7 @@
-import { RoutePlaceholder } from "@/components/placeholders/route-placeholder";
+'use client';
 
-export default function SavedProvidersPage() {
-  return (
-    <RoutePlaceholder
-      title="Saved Providers"
-      category="Customer Dashboard"
-      moduleTarget="Module 06"
-      description="Quick access to your favorite and frequently booked professionals."
-    />
-  );
+import CustomerSavedPage from '../../customer/saved/page';
+
+export default function SavedProvidersDashboardPage() {
+  return <CustomerSavedPage />;
 }

@@ -1,12 +1,7 @@
-import { RoutePlaceholder } from "@/components/placeholders/route-placeholder";
+'use client';
+
+import CustomerJobsPage from '../../customer/jobs/page';
 
 export default function MyPostedJobsPage() {
-  return (
-    <RoutePlaceholder
-      title="My Posted Jobs"
-      category="Customer Dashboard"
-      moduleTarget="Module 06"
-      description="View incoming bids and manage your posted custom job requests."
-    />
-  );
+  return <CustomerJobsPage />;
 }

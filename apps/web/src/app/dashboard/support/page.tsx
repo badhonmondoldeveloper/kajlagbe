@@ -1,12 +1,7 @@
-import { RoutePlaceholder } from "@/components/placeholders/route-placeholder";
+'use client';
 
-export default function SupportTicketsPage() {
-  return (
-    <RoutePlaceholder
-      title="Support & Tickets"
-      category="Customer Dashboard"
-      moduleTarget="Module 06"
-      description="Open support tickets and dispute resolutions."
-    />
-  );
+import SupportPage from '../../support/page';
+
+export default function DashboardSupportRoute() {
+  return <SupportPage />;
 }

@@ -70,9 +70,9 @@ export function MobileBottomNav({
   const items = [
     { label: 'হোম', href: '/', icon: Home },
     { label: 'খুঁজুন', href: '/services', icon: Search },
-    { label: 'কাজ দিন', href: '/dashboard/jobs', icon: PlusCircle, isCta: true },
-    { label: 'মেসেজ', href: '/dashboard/messages', icon: MessageSquare },
-    { label: 'প্রোফাইল', href: '/dashboard', icon: User },
+    { label: 'কাজ দিন', href: '/post-job', icon: PlusCircle, isCta: true },
+    { label: 'কাজের বোর্ড', href: '/jobs', icon: MessageSquare },
+    { label: 'ড্যাশবোর্ড', href: '/dashboard', icon: User },
   ];
 
   return (

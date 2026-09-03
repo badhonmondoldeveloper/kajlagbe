@@ -24,6 +24,10 @@ import {
   BarChart3,
   HelpCircle,
   LogOut,
+  Briefcase,
+  FileText,
+  PlusCircle,
+  Send,
 } from 'lucide-react';
 import { Badge, Avatar } from '@kajlagbe/ui';
 import { useAuth } from '../../context/auth-context';
@@ -42,7 +46,9 @@ export function DashboardSidebar({
     if (role === 'INDIVIDUAL_PROVIDER') {
       return [
         { label: 'ড্যাশবোর্ড', href: '/provider/dashboard', icon: LayoutDashboard },
-        { label: 'প্রোফাইল', href: '/provider/profile', icon: User },
+        { label: 'কাজের সুযোগ (Radar)', href: '/provider/jobs', icon: Briefcase },
+        { label: 'জমাকৃত আবেদন', href: '/provider/applications', icon: Send },
+        { label: 'সংরক্ষিত কাজ', href: '/provider/saved-jobs', icon: Bookmark },
         { label: 'সার্ভিস তালিকা', href: '/provider/services', icon: Wrench },
         { label: 'পোর্টফোলিও', href: '/provider/portfolio', icon: Image },
         { label: 'কাজের সময়সূচী', href: '/provider/availability', icon: Clock },
@@ -50,6 +56,7 @@ export function DashboardSidebar({
         { label: 'রিভিউ ও রেটিং', href: '/provider/reviews', icon: Star },
         { label: 'আয় ও লেনদেন', href: '/provider/earnings', icon: Wallet },
         { label: 'নোটিফিকেশন', href: '/notifications', icon: Bell },
+        { label: 'প্রোফাইল', href: '/provider/profile', icon: User },
         { label: 'সেটিংস', href: '/provider/settings', icon: Settings },
       ];
     }
@@ -70,8 +77,11 @@ export function DashboardSidebar({
     // Default: Customer
     return [
       { label: 'ড্যাশবোর্ড', href: '/customer/dashboard', icon: LayoutDashboard },
+      { label: 'আমার কাজের পোস্ট', href: '/customer/jobs', icon: FileText },
+      { label: 'নতুন কাজ পোস্ট', href: '/post-job', icon: PlusCircle },
       { label: 'সেবা খুঁজুন', href: '/services', icon: Search },
       { label: 'সংরক্ষিত প্রোভাইডার', href: '/customer/saved', icon: Bookmark },
+      { label: 'আমার রিভিউসমূহ', href: '/customer/reviews', icon: Star },
       { label: 'অ্যাকাউন্ট অ্যাক্টিভিটি', href: '/customer/activity', icon: Activity },
       { label: 'নোটিফিকেশন', href: '/notifications', icon: Bell },
       { label: 'প্রোফাইল', href: '/customer/profile', icon: User },

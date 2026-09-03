@@ -80,7 +80,7 @@ export function Header() {
         {/* Action Controls & User State */}
         <div className="flex items-center gap-3">
           <Link
-            href={isAuthenticated ? (role === 'CUSTOMER' ? '/dashboard/jobs' : '/jobs') : '/dashboard/jobs'}
+            href="/post-job"
             className="hidden sm:inline-flex"
           >
             <Button
@@ -198,7 +198,7 @@ export function Header() {
 
           <div className="space-y-2 pt-2">
             <Link
-              href="/dashboard/jobs"
+              href="/post-job"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block"
             >
