@@ -36,34 +36,39 @@ export function Footer() {
             </h4>
             <ul className="mt-4 space-y-2.5 text-xs sm:text-sm">
               <li>
-                <Link href="/services" className="hover:text-emerald-600 transition">
+                <Link href="/services/ac-repair" className="hover:text-emerald-600 transition">
                   এসি মেরামত ও সার্ভিসিং
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-emerald-600 transition">
-                  ইলেকট্রিক্যাল সার্ভিস
+                <Link href="/services/electrician" className="hover:text-emerald-600 transition">
+                  ইলেকট্রিক্যাল ওয়্যারিং
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-emerald-600 transition">
+                <Link href="/services/plumbing" className="hover:text-emerald-600 transition">
                   প্লাম্বিং ও পাইপ ফিটিং
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-emerald-600 transition">
+                <Link href="/services/cleaning" className="hover:text-emerald-600 transition">
                   বাড়ি ও অফিস ক্লিনিং
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-emerald-600 transition">
+                <Link href="/services/shifting" className="hover:text-emerald-600 transition">
                   বাসা বদল ও শিফটিং
+                </Link>
+              </li>
+              <li>
+                <Link href="/services" className="hover:text-emerald-600 transition font-semibold text-emerald-700">
+                  সকল সেবা ডিরেক্টরি →
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* For Providers */}
+          {/* For Providers & Businesses */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
               প্রোভাইডার ও ব্যবসা
@@ -81,7 +86,12 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/jobs" className="hover:text-emerald-600 transition">
-                  সরাসরি কাজের অফার
+                  লাইভ কাজের বোর্ড (Job Board)
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="hover:text-emerald-600 transition">
+                  সাবস্ক্রিপশন ও মূল্য
                 </Link>
               </li>
               <li>
@@ -90,19 +100,34 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/design-system" className="hover:text-emerald-600 transition font-semibold text-emerald-600">
+                <Link href="/design-system" className="hover:text-emerald-600 transition font-medium text-emerald-600">
                   ডিজাইন সিস্টেম গাইড
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Support & Coverage */}
+          {/* Company & Support */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
-              যোগাযোগ ও সহায়তা
+              কোম্পানি ও সহায়তা
             </h4>
             <ul className="mt-4 space-y-2.5 text-xs sm:text-sm">
+              <li>
+                <Link href="/about" className="hover:text-emerald-600 transition">
+                  আমাদের সম্পর্কে (About)
+                </Link>
+              </li>
+              <li>
+                <Link href="/how-it-works" className="hover:text-emerald-600 transition">
+                  কীভাবে কাজ করে
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className="hover:text-emerald-600 transition">
+                  ব্লগ ও সার্ভিস গাইড
+                </Link>
+              </li>
               <li>
                 <Link href="/help" className="hover:text-emerald-600 transition">
                   সাহায্য কেন্দ্র (FAQ)
@@ -115,11 +140,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-1.5 text-slate-600 pt-1">
                 <PhoneCall className="h-3.5 w-3.5 text-emerald-600" />
-                <span>+৮৮০ ৯৬১২-৩৪৫৬৭৮</span>
-              </li>
-              <li className="flex items-center gap-1.5 text-slate-600">
-                <Mail className="h-3.5 w-3.5 text-emerald-600" />
-                <span>support@kajlagbe.com</span>
+                <span>+৮৮০ ৯৬১২-XXXXXX</span>
               </li>
             </ul>
           </div>
@@ -149,7 +170,7 @@ export function Footer() {
           <div className="mt-3 sm:mt-0 flex items-center space-x-4">
             <Link href="/safety" className="hover:underline">শর্তাবলী ও গোপনীয়তা</Link>
             <span>•</span>
-            <span className="text-emerald-600 font-semibold">Module 02: Design System Ready</span>
+            <span className="text-emerald-600 font-semibold">Module 03: Premium Public Website</span>
           </div>
         </div>
       </div>

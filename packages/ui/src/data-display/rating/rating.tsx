@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { Star } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -115,4 +117,3 @@ export function RatingSummary({
     </div>
   );
 }
-

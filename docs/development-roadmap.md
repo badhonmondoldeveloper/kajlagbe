@@ -23,13 +23,15 @@ This document defines the 12-module roadmap to construct the full KajLagbe platf
 
 ---
 
-### MODULE 03 — Public Website
-- Hero section with quick service search & location selector (Dhaka, Chittagong, etc.)
-- Top categories catalog & featured popular services
+### MODULE 03 — Public Website (Completed)
+- Master Homepage with smart service search & location selector (Dhaka, Chattogram, Sylhet, etc.)
+- Top categories catalog & featured popular services with subservice breakdown
 - How It Works walkthrough for customers and service providers
 - Testimonials, verified badges, trust & safety guarantees
 - Public service directory with faceted filters (price, rating, location)
-- Public provider profile view & public custom jobs board
+- Public provider profile view with portfolio & customer reviews
+- Public live jobs board & job details view
+- Marketing & trust pages: `/for-providers`, `/for-businesses`, `/pricing`, `/safety`, `/help`, `/about`, `/contact`, `/blog`
 
 ---
 

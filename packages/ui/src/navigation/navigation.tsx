@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { Home, Search, PlusCircle, MessageSquare, User, ChevronRight } from 'lucide-react';
 import { cn } from '../lib/utils';
