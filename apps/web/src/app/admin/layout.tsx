@@ -61,7 +61,7 @@ export default function AdminLayout({
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-900">Admin Control</p>
-                <Badge variant="danger">Super Admin</Badge>
+                <Badge variant="error">Super Admin</Badge>
               </div>
             </div>
 
