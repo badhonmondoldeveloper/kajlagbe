@@ -270,9 +270,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resendVerificationEmail = async (email: string) => {
     try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kajlagbe-sigma.vercel.app';
+      const emailRedirectTo = `${origin}/auth/callback?redirectTo=/dashboard`;
+
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email.trim(),
+        options: {
+          emailRedirectTo,
+        },
       });
       if (error) return { success: false, error: error.message };
       return { success: true };
@@ -291,10 +297,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }) => {
     setIsLoading(true);
     try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kajlagbe-sigma.vercel.app';
+      const emailRedirectTo = `${origin}/auth/callback?redirectTo=/dashboard`;
+
       const { data, error } = await supabase.auth.signUp({
         email: params.email.trim(),
         password: params.password,
         options: {
+          emailRedirectTo,
           data: {
             full_name: params.fullName,
             name: params.fullName,
@@ -346,10 +356,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const requestPasswordReset = async (email: string) => {
     try {
-      const redirectUrl =
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/reset-password`
-          : undefined;
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kajlagbe-sigma.vercel.app';
+      const redirectUrl = `${origin}/reset-password`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: redirectUrl,

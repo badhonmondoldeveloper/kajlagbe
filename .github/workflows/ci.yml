@@ -1,10 +1,10 @@
-name: KajLagbe CI
+name: KajLagbe CI & Auto Deploy
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   build-and-test:
@@ -19,7 +19,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v3
@@ -27,7 +26,7 @@ jobs:
           version: 9
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Generate Prisma Client
         run: pnpm db:generate
@@ -41,3 +40,39 @@ jobs:
       - name: Production Build
         run: pnpm build
 
+  deploy-production:
+    name: Auto Deploy to Vercel
+    needs: [build-and-test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploy to Vercel Production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_rhXIwIyLYpA64tV692ODmzsb
+          VERCEL_PROJECT_ID: prj_E8z1gYgjbSdal8ihsJcptXOfW4iu
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then
+            vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+            vercel build --prod --token=$VERCEL_TOKEN
+            vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+          else
+            echo "VERCEL_TOKEN secret is not set, skipping CI vercel deploy."
+          fi
