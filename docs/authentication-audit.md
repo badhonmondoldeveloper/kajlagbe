@@ -30,3 +30,4 @@ This document presents a comprehensive audit of the authentication, session mana
 | 19 | **Refresh Token Handling** | `WORKING` | Token refreshing handled transparently by `@supabase/ssr` middleware. |
 | 20 | **Friendly Error Mapping** | `WORKING` | Converts technical errors into Bengali user-friendly messages across login and registration forms. |
 | 21 | **Phone OTP Auth** | `PARTIALLY WORKING` | Phone OTP flow implemented in AuthContext; requires Twilio/SMS gateway credentials in Supabase Dashboard to send live SMS. |
+

@@ -71,3 +71,4 @@ When a user signs up via Email or Google OAuth:
 1. Supabase Auth generates a unique `auth.uid()`.
 2. `AuthContext.fetchProfile()` checks if a matching record exists in the PostgreSQL `users` table (`id` = `auth.uid()`).
 3. If absent, `users` and `user_profiles` records are created with fallback metadata without duplicating existing profile data.
+
