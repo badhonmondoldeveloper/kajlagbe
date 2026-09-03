@@ -159,3 +159,4 @@ export interface BusinessDashboardStats {
   customerRequestsCount: number;
   profileCompletion: ProfileCompletionStatus;
 }
+

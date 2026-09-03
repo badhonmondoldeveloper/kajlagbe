@@ -121,8 +121,8 @@ export default function CustomerDashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
             { label: 'সেবা বুক করুন', href: '/services', icon: Search, color: 'text-emerald-600 bg-emerald-50' },
-            { label: 'কাজ পোস্ট করুন', href: '/dashboard/jobs', icon: PlusCircle, color: 'text-sky-600 bg-sky-50' },
-            { label: 'প্রোভাইডার তালিকা', href: '/providers', icon: Wrench, color: 'text-purple-600 bg-purple-50' },
+            { label: 'কাজ পোস্ট করুন', href: '/post-job', icon: PlusCircle, color: 'text-sky-600 bg-sky-50' },
+            { label: 'আমার পোস্টসমূহ', href: '/customer/jobs', icon: FileText, color: 'text-purple-600 bg-purple-50' },
             { label: 'হেল্প ও সাপোর্ট', href: '/help', icon: HelpCircle, color: 'text-amber-600 bg-amber-50' },
           ].map((act, idx) => {
             const Icon = act.icon;
@@ -147,15 +147,17 @@ export default function CustomerDashboardPage() {
           <DashboardSection
             title="আপনার কাজের রিকোয়েস্টসমূহ"
             subtitle="পোস্টকৃত কাজের প্রস্তাব ও প্রোভাইডারদের কোটেশন"
-            actionText="নতুন পোস্ট"
-            actionHref="/dashboard/jobs"
+            actionText="সকল পোস্ট"
+            actionHref="/customer/jobs"
           >
             <DashboardEmptyState
               icon={FileText}
-              title="কোনো রিকোয়েস্ট সক্রিয় নেই"
+              title="চলমান কাজের রিকোয়েস্ট দেখুন"
               description="আপনার প্রয়োজনীয় কাজের বিবরণ দিয়ে সরাসরি পোস্ট করুন। অভিজ্ঞ টেকনিশিয়ানরা আপনাকে দরপ্রস্তাব পাঠাবে।"
               actionText="কাজ পোস্ট করুন"
-              actionHref="/dashboard/jobs"
+              actionHref="/post-job"
+              secondaryActionText="আমার পোস্টসমূহ"
+              secondaryActionHref="/customer/jobs"
             />
           </DashboardSection>
 

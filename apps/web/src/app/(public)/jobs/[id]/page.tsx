@@ -148,13 +148,13 @@ export default function JobDetailsPage({ params }: JobDetailsProps) {
               </div>
 
               <div className="space-y-3 pt-2">
-                <Link href="/for-providers">
+                <Link href={`/provider/jobs/${job.id}`}>
                   <Button size="lg" className="w-full font-bold shadow-sm">
                     কাজে আবেদন করুন (Apply Now)
                   </Button>
                 </Link>
                 <p className="text-[11px] text-center text-slate-400">
-                  আবেদন করতে প্রোভাইডার একাউন্টে লগইন করুন
+                  আবেদন করতে প্রোভাইডার কনসোলে লগইন করুন
                 </p>
               </div>
 

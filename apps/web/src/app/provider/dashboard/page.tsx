@@ -15,6 +15,7 @@ import {
   Image,
   ArrowRight,
   Sparkles,
+  FileText,
 } from 'lucide-react';
 import { Button, Badge, Avatar } from '@kajlagbe/ui';
 import { DashboardLayout } from '../../../components/dashboard/dashboard-layout';
@@ -128,8 +129,8 @@ export default function ProviderDashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
             { label: 'সার্ভিস যুক্ত করুন', href: '/provider/services', icon: Wrench, color: 'text-emerald-600 bg-emerald-50' },
-            { label: 'কাজের বোর্ড দেখুন', href: '/jobs', icon: Briefcase, color: 'text-sky-600 bg-sky-50' },
-            { label: 'পোর্টফোলিও সাজান', href: '/provider/portfolio', icon: Image, color: 'text-purple-600 bg-purple-50' },
+            { label: 'কাজের সুযোগ খুঁজুন', href: '/provider/jobs', icon: Briefcase, color: 'text-sky-600 bg-sky-50' },
+            { label: 'জমাকৃত আবেদনসমূহ', href: '/provider/applications', icon: FileText, color: 'text-purple-600 bg-purple-50' },
             { label: 'আয়ের বিবরণ', href: '/provider/earnings', icon: Wallet, color: 'text-amber-600 bg-amber-50' },
           ].map((act, idx) => {
             const Icon = act.icon;
@@ -154,15 +155,15 @@ export default function ProviderDashboardPage() {
           <DashboardSection
             title="নিকটবর্তী কাজের সুযোগ (Job Radar)"
             subtitle="আপনার সার্ভিস ক্যাটাগরি ও এলাকায় গ্রাহকদের নতুন রিকোয়েস্ট"
-            actionText="সকল কাজ"
-            actionHref="/jobs"
+            actionText="সকল সুযোগ"
+            actionHref="/provider/jobs"
           >
             <DashboardEmptyState
               icon={Briefcase}
               title="নতুন ৫টি কাজ আপনার এলাকায় সক্রিয়"
               description="গ্রাহকদের পোস্ট করা কাজের বিবরণ দেখুন এবং সরাসরি দরপ্রস্তাব বা আবেদন জমা দিন।"
-              actionText="কাজের বোর্ড দেখুন"
-              actionHref="/jobs"
+              actionText="কাজের সুযোগ দেখুন"
+              actionHref="/provider/jobs"
             />
           </DashboardSection>
 

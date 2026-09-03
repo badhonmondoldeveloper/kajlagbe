@@ -77,3 +77,4 @@ Located in `apps/web/src/components/dashboard/`:
 In compliance with platform guidelines, no fake marketplace bookings, wallets, or earnings are generated:
 - Financial sections display truthful balances (`৳ ০.০০`) with clear indicators that transaction data will populate automatically upon service completion and escrow release.
 - Unfilled sections display meaningful empty states with direct guidance on how to populate them.
+

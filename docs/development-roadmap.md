@@ -60,12 +60,15 @@ This document defines the 12-module roadmap to construct the full KajLagbe platf
 
 ---
 
-### MODULE 06 — Customer Dashboard & Marketplace Experience
-- Unified booking management (Pending, Accepted, In-Progress, Completed, Cancelled)
-- Custom job request creator (budget, location, photos, urgency)
-- Provider comparison & quotation acceptance
-- Live tracking of assigned technician arrival
-- Service reviews, 5-star ratings, and tipping
+### MODULE 06 — Advanced Job Posting & Service Request Marketplace (Completed)
+- 7-Step Multi-Step Job Creator: `/post-job` with category, requirements, safe public area, protected private address, budget ranges, urgency, and draft saving
+- Customer Job Command Center: `/customer/jobs` and `/customer/jobs/[id]` with status tabs, application inbox, quote comparison matrix, double-confirmation provider selection, and audit timeline
+- Provider Job Discovery Console: `/provider/jobs` and `/provider/jobs/[id]` with real-time job radar, category/location filters, proposal & price quote submissions, and job bookmarking
+- Provider Applications Manager: `/provider/applications` and `/provider/applications/[id]` with lifecycle tracking (SUBMITTED, SHORTLISTED, ACCEPTED, REJECTED, WITHDRAWN) and withdrawal action
+- Public Job Board & Single View: `/jobs` and `/jobs/[id]` with privacy-aware customer protection
+- Extended Prisma Schema: `Job`, `JobApplication`, `JobStatusHistory`, `SavedJob` with atomic state transitions
+- NestJS API Modules: `JobsModule` and `ApplicationsModule` with concurrency protection, state machine validation, and ownership enforcement
+
 
 ---
 

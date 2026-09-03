@@ -63,6 +63,49 @@ enum ActivityType {
   SECURITY_EVENT
 }
 
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+  EXPIRED
+  UNDER_REVIEW
+  PROVIDER_SELECTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  ARCHIVED
+}
+
+enum JobUrgency {
+  FLEXIBLE
+  TODAY
+  URGENT
+  EMERGENCY_REQUEST
+}
+
+enum BudgetType {
+  FIXED_BUDGET
+  BUDGET_RANGE
+  NEGOTIABLE
+  REQUEST_QUOTES
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  VIEWED
+  SHORTLISTED
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum PricingType {
+  FIXED
+  HOURLY
+  NEGOTIABLE
+}
+
 model User {
   id                String            @id @default(uuid())
   email             String            @unique
@@ -84,6 +127,10 @@ model User {
   notifications     Notification[]
   activities        UserActivity[]
   savedProviders    SavedProvider[]
+  jobsPosted        Job[]             @relation("CustomerJobs")
+  jobApplications   JobApplication[]  @relation("ProviderApplications")
+  savedJobs         SavedJob[]
+  statusHistories   JobStatusHistory[]
 
   @@index([email])
   @@index([phone])
@@ -481,3 +528,98 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
+
+model Job {
+  id                    String            @id @default(uuid())
+  customerId            String
+  customer              User              @relation("CustomerJobs", fields: [customerId], references: [id], onDelete: Cascade)
+  title                 String
+  description           String
+  categorySlug          String
+  serviceSlug           String?
+  requirements          String[]          @default([])
+  urgency               JobUrgency        @default(FLEXIBLE)
+  budgetType            BudgetType        @default(BUDGET_RANGE)
+  budgetMin             Decimal?          @db.Decimal(10, 2)
+  budgetMax             Decimal?          @db.Decimal(10, 2)
+  status                JobStatus         @default(DRAFT)
+  divisionId            String?
+  districtId            String?
+  generalArea           String
+  privateAddress        String?
+  preferredDate         String?
+  preferredTime         String?
+  selectedApplicationId String?
+  selectedProviderId    String?
+  cancellationReason    String?
+  isPublic              Boolean           @default(true)
+  publishedAt           DateTime?
+  completedAt           DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  applications          JobApplication[]
+  statusHistories       JobStatusHistory[]
+  savedBy               SavedJob[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([categorySlug])
+  @@index([urgency])
+  @@index([createdAt])
+  @@map("jobs")
+}
+
+model JobApplication {
+  id               String            @id @default(uuid())
+  jobId            String
+  job              Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  providerId       String
+  provider         User              @relation("ProviderApplications", fields: [providerId], references: [id], onDelete: Cascade)
+  coverLetter      String
+  proposedPrice    Decimal           @db.Decimal(10, 2)
+  pricingType      PricingType       @default(FIXED)
+  estimatedDays    Int               @default(1)
+  availabilityNote String?
+  status           ApplicationStatus @default(SUBMITTED)
+  isShortlisted    Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@unique([jobId, providerId])
+  @@index([jobId])
+  @@index([providerId])
+  @@index([status])
+  @@map("job_applications")
+}
+
+model JobStatusHistory {
+  id          String    @id @default(uuid())
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  fromStatus  JobStatus
+  toStatus    JobStatus
+  changedById String?
+  changedBy   User?     @relation(fields: [changedById], references: [id], onDelete: SetNull)
+  reason      String?
+  createdAt   DateTime  @default(now())
+
+  @@index([jobId])
+  @@index([createdAt])
+  @@map("job_status_histories")
+}
+
+model SavedJob {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@index([jobId])
+  @@map("saved_jobs")
+}
+

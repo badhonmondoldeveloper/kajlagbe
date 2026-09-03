@@ -11,3 +11,4 @@ import { SupabaseModule } from '../../common/supabase';
   exports: [DashboardService],
 })
 export class DashboardModule {}
+
