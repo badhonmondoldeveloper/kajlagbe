@@ -143,4 +143,35 @@ export class AdminController {
   ): Promise<any[]> {
     return this.adminService.getAuditLogs(action, entityType);
   }
+
+  @Get("payment-methods")
+  @ApiOperation({ summary: "Get manual bKash/Nagad/Rocket/Crypto payment channels" })
+  getPaymentMethods(): Promise<any[]> {
+    return this.adminService.getPaymentMethods();
+  }
+
+  @Post("payment-methods")
+  @ApiOperation({ summary: "Update manual bKash/Nagad/Rocket/Crypto payment channels" })
+  savePaymentMethods(
+    @Body() body: { channels: any[] },
+    @Request() req: any,
+  ): Promise<{ success: boolean }> {
+    return this.adminService.savePaymentMethods(body.channels, req.user?.id);
+  }
+
+  @Get("payment-orders")
+  @ApiOperation({ summary: "Get submitted manual payment orders queue" })
+  getPaymentOrders(@Query("status") status?: string): Promise<any[]> {
+    return this.adminService.getPaymentOrders(status);
+  }
+
+  @Post("payment-orders/:id/process")
+  @ApiOperation({ summary: "Approve or reject submitted manual payment" })
+  processPaymentOrder(
+    @Param("id") id: string,
+    @Body() body: { action: "APPROVE" | "REJECT"; reason?: string },
+    @Request() req: any,
+  ): Promise<{ success: boolean }> {
+    return this.adminService.processPaymentOrder(id, body.action, body.reason, req.user?.id);
+  }
 }

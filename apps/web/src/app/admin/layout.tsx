@@ -21,6 +21,7 @@ import {
   FolderTree,
   HelpCircle,
   TrendingUp,
+  Wallet,
 } from 'lucide-react';
 import { Badge, Button } from '@kajlagbe/ui';
 import { useAuth } from '../../context/auth-context';
@@ -55,7 +56,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       heading: 'Finance & Monetization',
       items: [
-        { label: 'Payments & Ledger', href: '/admin/payments', icon: CreditCard },
+        { label: 'Payment Approvals', href: '/admin/payments', icon: CreditCard },
+        { label: 'Payment Methods', href: '/admin/payment-methods', icon: Wallet },
         { label: 'Payout Approvals', href: '/admin/payouts', icon: SlidersHorizontal },
       ],
     },

@@ -7,7 +7,7 @@ import {
   ProcessPayoutDto,
   ToggleFeatureFlagDto,
 } from "./admin.dto";
-import { PayoutStatus, UserStatus, VerificationStatus, JobStatus, ProfileStatus, BookingStatus } from "@kajlagbe/database";
+import { PayoutStatus, UserStatus, VerificationStatus, JobStatus, ProfileStatus, BookingStatus, PaymentStatus } from "@kajlagbe/database";
 
 @Injectable()
 export class AdminService {
@@ -448,5 +448,175 @@ export class AdminService {
       metadata: l.metadata,
       createdAt: l.createdAt.toISOString(),
     }));
+  }
+
+  async getPaymentMethods(): Promise<any[]> {
+    const setting = await this.prisma.systemSetting.findUnique({
+      where: { key: "MANUAL_PAYMENT_CHANNELS" },
+    });
+
+    if (setting && setting.value) {
+      try {
+        return JSON.parse(setting.value);
+      } catch {
+        // Fallback
+      }
+    }
+
+    return [
+      {
+        id: 'bkash-personal',
+        type: 'BKASH',
+        name: 'bKash Personal (বিকাশ পার্সোনাল)',
+        accountNumber: '01700000000',
+        accountType: 'Personal',
+        networkName: 'bKash Mobile Menu (*247# / App)',
+        instructions: 'bKash App অথবা *247# থেকে সেন্ড মানি করুন। এরপর ট্রানজেকশন আইডি (TrxID) দিন।',
+        feePercentage: 0,
+        isActive: true,
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'nagad-personal',
+        type: 'NAGAD',
+        name: 'Nagad Personal (নগদ পার্সোনাল)',
+        accountNumber: '01800000000',
+        accountType: 'Personal',
+        networkName: 'Nagad Mobile Menu (*167# / App)',
+        instructions: 'Nagad App অথবা *167# থেকে সেন্ড মানি করুন। ট্রানজেকশন আইডি (TrxID) সাবমিট করুন।',
+        feePercentage: 0,
+        isActive: true,
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'rocket-personal',
+        type: 'ROCKET',
+        name: 'Rocket Personal (রকেট পার্সোনাল)',
+        accountNumber: '01900000000-7',
+        accountType: 'Personal',
+        networkName: 'Rocket App / DBBL Dial (*322#)',
+        instructions: 'রকেট অ্যাপ অথবা dial *322# থেকে সেন্ড মানি সম্পন্ন করে TrxID প্রদান করুন।',
+        feePercentage: 0,
+        isActive: true,
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'usdt-trc20',
+        type: 'CRYPTO',
+        name: 'USDT (Tether - TRC20)',
+        accountNumber: 'TKh19vW8xR4kL8zP2mN9qS7vB5xC3zY1aD',
+        accountType: 'Crypto Wallet Address',
+        networkName: 'TRC20 (Tron Network)',
+        instructions: 'Tron (TRC20) নেটওয়ার্কে USDT সেন্ড করুন এবং TxHash/Transaction Hash প্রদান করুন।',
+        feePercentage: 0,
+        isActive: true,
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'usdt-bep20',
+        type: 'CRYPTO',
+        name: 'USDT (Tether - BEP20 / BNB Chain)',
+        accountNumber: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
+        accountType: 'Crypto Wallet Address',
+        networkName: 'BEP20 (BNB Smart Chain)',
+        instructions: 'BNB Smart Chain (BEP20) নেটওয়ার্কে USDT ট্রান্সফার সম্পন্ন করুন এবং TxHash প্রদান করুন।',
+        feePercentage: 0,
+        isActive: true,
+        updatedAt: new Date().toISOString(),
+      },
+    ];
+  }
+
+  async savePaymentMethods(channels: any[], adminUserId: string): Promise<{ success: boolean }> {
+    await this.prisma.systemSetting.upsert({
+      where: { key: "MANUAL_PAYMENT_CHANNELS" },
+      update: { value: JSON.stringify(channels) },
+      create: { key: "MANUAL_PAYMENT_CHANNELS", value: JSON.stringify(channels), description: "Manual bKash, Nagad, Rocket and Crypto wallet payment settings" },
+    });
+
+    await this.logAudit(adminUserId, "PAYMENT_CHANNELS_UPDATED", "SystemSetting", "MANUAL_PAYMENT_CHANNELS", {
+      count: channels.length,
+      activeCount: channels.filter(c => c.isActive).length,
+    });
+
+    return { success: true };
+  }
+
+  async getPaymentOrders(status?: string): Promise<any[]> {
+    const where: any = {};
+    if (status && status !== 'ALL') {
+      where.status = status;
+    }
+
+    const attempts = await this.prisma.paymentAttempt.findMany({
+      where,
+      take: 100,
+      orderBy: { createdAt: "desc" },
+      include: {
+        paymentOrder: {
+          include: {
+            customer: { select: { email: true } },
+          },
+        },
+      },
+    });
+
+    return attempts.map((a) => {
+      let raw: any = {};
+      try {
+        raw = typeof a.rawPayload === 'string' ? JSON.parse(a.rawPayload) : a.rawPayload || {};
+      } catch {
+        // Fallback for rawPayload parsing
+      }
+
+      return {
+        id: a.id,
+        orderReference: a.paymentOrder?.orderReference || a.id.slice(0, 8),
+        userId: a.paymentOrder?.customerId || 'N/A',
+        userEmail: a.paymentOrder?.customer?.email || 'customer@kajlagbe.com',
+        amountBdt: Number(a.paymentOrder?.grossAmount || raw.amountBdt || 0),
+        amountUsd: Number(raw.amountUsd || (Number(a.paymentOrder?.grossAmount || 0) / 120).toFixed(2)),
+        channelId: raw.channelId || a.gatewayProvider || 'BKASH',
+        channelName: raw.channelName || a.gatewayProvider || 'bKash Personal',
+        senderAccount: raw.senderAccount || '01700000000',
+        transactionId: a.transactionId || raw.transactionId || 'TRX123456',
+        status: a.status,
+        notes: raw.notes || '',
+        createdAt: a.createdAt.toISOString(),
+      };
+    });
+  }
+
+  async processPaymentOrder(id: string, action: 'APPROVE' | 'REJECT', reason?: string, adminUserId?: string): Promise<{ success: boolean }> {
+    const attempt = await this.prisma.paymentAttempt.findUnique({
+      where: { id },
+      include: { paymentOrder: true },
+    });
+
+    if (!attempt) {
+      throw new NotFoundException(`Payment submission with ID ${id} not found`);
+    }
+
+    const newStatus = action === 'APPROVE' ? PaymentStatus.SUCCEEDED : PaymentStatus.FAILED;
+
+    await this.prisma.paymentAttempt.update({
+      where: { id },
+      data: { status: newStatus },
+    });
+
+    if (attempt.paymentOrder) {
+      await this.prisma.paymentOrder.update({
+        where: { id: attempt.paymentOrderId },
+        data: { status: action === 'APPROVE' ? PaymentStatus.SUCCEEDED : PaymentStatus.FAILED },
+      });
+    }
+
+    await this.logAudit(adminUserId || null, `PAYMENT_ORDER_${action}D`, "PaymentAttempt", id, {
+      action,
+      reason,
+      amount: attempt.paymentOrder?.grossAmount,
+    });
+
+    return { success: true };
   }
 }

@@ -58,23 +58,22 @@ export interface PayoutRequestAdminItem {
   walletAccountId: string;
   userId: string;
   userName: string;
+  userEmail: string;
   amount: number;
-  currency: string;
-  payoutMethod: string;
-  accountNumberMasked: string;
-  accountName: string;
+  paymentMethod: string;
+  payoutMethod?: string;
+  accountDetails: string;
+  accountNumberMasked?: string;
+  referenceCode?: string;
   status: string;
-  referenceCode: string;
-  requestedAt: string;
-  processedAt?: string | null;
-  failureReason?: string | null;
+  createdAt: string;
 }
 
-export interface AuditLogItem {
+export interface AuditLogAdminItem {
   id: string;
   userId?: string | null;
   userName?: string | null;
-  userRole?: string | null;
+  userEmail?: string | null;
   action: string;
   entityType: string;
   entityId?: string | null;
@@ -82,13 +81,47 @@ export interface AuditLogItem {
   createdAt: string;
 }
 
-export interface FeatureFlagItem {
+export type AuditLogItem = AuditLogAdminItem;
+
+export interface FeatureFlagAdminItem {
   id: string;
   key: string;
   name: string;
   description?: string | null;
   isEnabled: boolean;
-  rolloutPercentage: number;
   updatedAt: string;
 }
 
+export type FeatureFlagItem = FeatureFlagAdminItem;
+
+export interface ManualPaymentChannel {
+  id: string;
+  type: 'BKASH' | 'NAGAD' | 'ROCKET' | 'CRYPTO';
+  name: string;
+  accountNumber: string;
+  accountType?: string;
+  networkName?: string;
+  instructions: string;
+  feePercentage: number;
+  isActive: boolean;
+  qrCodeUrl?: string;
+  updatedAt: string;
+}
+
+export interface ManualPaymentSubmission {
+  id: string;
+  orderReference: string;
+  userId: string;
+  userEmail: string;
+  amountBdt: number;
+  amountUsd: number;
+  channelId: string;
+  channelName: string;
+  senderAccount: string;
+  transactionId: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  notes?: string;
+  rejectionReason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
