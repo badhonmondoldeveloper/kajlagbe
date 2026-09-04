@@ -3,14 +3,18 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, PlusCircle, ShieldCheck, User as UserIcon, LogOut, Shield } from 'lucide-react';
+import { Menu, PlusCircle, ShieldCheck, User as UserIcon, LogOut, Shield, Search, MapPin, Navigation } from 'lucide-react';
 import { Button, Drawer, Badge, Avatar } from '@kajlagbe/ui';
 import { useAuth } from '../../context/auth-context';
+import { useLocation } from '../../context/location-context';
+import { GlobalSearchModal } from '../search/global-search-modal';
 
 export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = React.useState(false);
   const { user, profile, role, isAuthenticated, signOut } = useAuth();
+  const { location, detectLiveLocation } = useLocation();
 
   const navLinks: { label: string; href: string; badge?: string }[] = [
     { label: 'সেবা খুঁজুন', href: '/services' },
@@ -39,45 +43,80 @@ export function Header() {
     'ইউজার';
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
-      <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        {/* Brand Logo & Tag */}
-        <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 select-none group">
-            <span className="text-2xl font-black tracking-tight text-emerald-600 transition-transform group-hover:scale-102">
-              KAJ<span className="text-slate-900">LAGBE</span>
-            </span>
-            <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
-              BD
-            </span>
-          </Link>
+    <>
+      <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
+        <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 gap-3">
+          {/* Brand Logo & Nav */}
+          <div className="flex items-center gap-4 lg:gap-6">
+            <Link href="/" className="flex items-center gap-2 select-none group shrink-0">
+              <span className="text-xl sm:text-2xl font-black tracking-tight text-emerald-600 transition-transform group-hover:scale-102">
+                KAJ<span className="text-slate-900">LAGBE</span>
+              </span>
+              <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
+                BD
+              </span>
+            </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-600">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center gap-1.5 transition-colors hover:text-emerald-600 ${
-                    isActive ? 'text-emerald-600 font-bold' : ''
-                  }`}
-                >
-                  <span>{link.label}</span>
-                  {link.badge && (
-                    <Badge variant="default" size="sm">
-                      {link.badge}
-                    </Badge>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
+            {/* Live Location Pill Button */}
+            <button
+              type="button"
+              onClick={() => setIsSearchModalOpen(true)}
+              className="hidden md:flex items-center gap-1.5 rounded-full bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200/80 transition shadow-2xs shrink-0"
+              title="অবস্থান পরিবর্তন বা সনাক্তকরণ করতে ক্লিক করুন"
+            >
+              <MapPin className="h-3.5 w-3.5 text-emerald-600" />
+              <span>{location.area || location.district || 'ঢাকা (Auto)'}</span>
+              {location.detected && (
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              )}
+            </button>
 
-        {/* Action Controls & User State */}
-        <div className="flex items-center gap-3">
+            {/* Desktop Navigation Links */}
+            <nav className="hidden xl:flex items-center gap-6 text-sm font-semibold text-slate-600">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center gap-1.5 transition-colors hover:text-emerald-600 ${
+                      isActive ? 'text-emerald-600 font-bold' : ''
+                    }`}
+                  >
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Center Search Input Trigger */}
+          <div className="flex-1 max-w-sm hidden sm:block">
+            <button
+              type="button"
+              onClick={() => setIsSearchModalOpen(true)}
+              className="w-full flex items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-slate-50/80 hover:bg-slate-100/80 px-3.5 py-2 text-xs font-medium text-slate-400 shadow-2xs transition"
+            >
+              <div className="flex items-center gap-2 truncate">
+                <Search className="h-4 w-4 text-emerald-600 shrink-0" />
+                <span className="truncate">খুঁজুন (যেমন: এসি ওয়াশ, প্লাম্বার)...</span>
+              </div>
+              <kbd className="hidden lg:inline-block rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-600">
+                Ctrl+K
+              </kbd>
+            </button>
+          </div>
+
+          {/* Action Controls & User State */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Mobile Search Trigger Icon */}
+            <button
+              type="button"
+              onClick={() => setIsSearchModalOpen(true)}
+              className="sm:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100"
+            >
+              <Search className="h-5 w-5 text-emerald-600" />
+            </button>
           <Link
             href="/post-job"
             className="hidden sm:inline-flex"
@@ -247,6 +286,12 @@ export function Header() {
           </div>
         </div>
       </Drawer>
-    </header>
+      </header>
+
+      <GlobalSearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+      />
+    </>
   );
 }

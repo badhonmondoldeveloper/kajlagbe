@@ -32,13 +32,16 @@ import {
   Breadcrumb,
 } from '@kajlagbe/ui';
 import { PROVIDERS, CATEGORIES, DIVISIONS } from '../../../data';
+import { useLocation } from '../../../context/location-context';
 
 export default function ProvidersPage() {
+  const { location, detectLiveLocation } = useLocation();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedCategory, setSelectedCategory] = React.useState('all');
   const [selectedDivision, setSelectedDivision] = React.useState('all');
   const [onlyVerified, setOnlyVerified] = React.useState(false);
   const [onlyAvailable, setOnlyAvailable] = React.useState(false);
+  const [onlyNearMe, setOnlyNearMe] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<'recommended' | 'rating' | 'experience'>('recommended');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = React.useState(false);
 
