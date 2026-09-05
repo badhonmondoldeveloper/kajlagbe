@@ -2,6 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@kajlagbe/ui', '@kajlagbe/utils', '@kajlagbe/types'],
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;

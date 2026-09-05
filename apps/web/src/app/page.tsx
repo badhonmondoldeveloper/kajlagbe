@@ -44,6 +44,7 @@ import {
   Accordion,
 } from '@kajlagbe/ui';
 import { CATEGORIES, PROVIDERS, TESTIMONIALS, DIVISIONS, FAQS } from '../data';
+import { AdBanner } from '../components/ads/ad-banner';
 
 export default function HomePage() {
   const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -261,6 +262,9 @@ export default function HomePage() {
               </p>
             </div>
           </div>
+
+          {/* AdSense Homepage Banner */}
+          <AdBanner slot="9876543210" className="mt-8" />
         </Container>
       </SectionContainer>
 

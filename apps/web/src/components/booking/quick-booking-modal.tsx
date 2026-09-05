@@ -7,11 +7,7 @@ import {
   MapPin,
   Clock,
   ShieldCheck,
-  CreditCard,
   CheckCircle2,
-  Phone,
-  MessageSquare,
-  Sparkles,
   Zap,
   Calendar,
 } from 'lucide-react';
@@ -32,9 +28,9 @@ export function QuickBookingModal({
   isOpen,
   onClose,
   serviceTitle = 'এসি সার্ভিসিং ও মেরামত',
-  categoryTitle = 'এসি ও ইলেকট্রিক সেবা',
+  categoryTitle: _categoryTitle = 'এসি ও ইলেকট্রিক সেবা',
   providerName,
-  providerPhone = '০১৭০০-০০০০০০',
+  providerPhone: _providerPhone = '০১৭০০-০০০০০০',
   estimatedPrice = '৳ ১,২০০ - ৳ ২,৫০০',
 }: QuickBookingModalProps) {
   const { location, detectLiveLocation } = useLocation();

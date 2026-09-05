@@ -38,6 +38,7 @@ import {
   Accordion,
 } from '@kajlagbe/ui';
 import { QuickBookingModal } from '../../../../components/booking/quick-booking-modal';
+import { AdBanner } from '../../../../components/ads/ad-banner';
 import type { ServiceCategory, Provider } from '../../../../data';
 
 interface CategoryDetailsViewProps {
@@ -208,6 +209,9 @@ export function CategoryDetailsView({ category, matchingProviders }: CategoryDet
             <strong>মূল্য নির্দেশিকা:</strong> প্রদর্শিত মূল্য আনুমানিক। কাজের জটিলতা, ব্যবহৃত পার্টস ও এলাকাভেদে চূড়ান্ত মূল্য ভিন্ন হতে পারে। কাজ শুরুর পূর্বে টেকনিশিয়ানের সাথে বাজেট নিশ্চিত করে নিন।
           </p>
         </div>
+
+        {/* AdSense Category Banner */}
+        <AdBanner slot="3456789012" className="mt-6" />
       </Container>
 
       {/* 3. Available Providers for this Category */}
