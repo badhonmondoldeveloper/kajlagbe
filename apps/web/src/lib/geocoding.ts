@@ -74,3 +74,4 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Detected
     formattedAddress: 'মিরপুর-১০, ঢাকা উত্তর',
   };
 }
+
