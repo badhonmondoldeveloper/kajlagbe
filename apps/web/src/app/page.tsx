@@ -67,7 +67,11 @@ export default function HomePage() {
   return (
     <div className="space-y-12 sm:space-y-16">
       {/* 1. Hero Section & Smart Search */}
-      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-emerald-50/70 via-slate-50 to-white py-12 sm:py-20 lg:py-24">
+      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-emerald-50/80 via-slate-50 to-white py-12 sm:py-20 lg:py-24">
+        {/* Ambient Glow Orbs */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-400/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-1/3 right-10 w-[400px] h-[300px] bg-amber-400/10 blur-[100px] rounded-full pointer-events-none" />
+
         <Container className="text-center relative z-10">
           <div className="inline-flex items-center gap-2 mb-4">
             <Badge variant="verified" size="sm">
