@@ -31,8 +31,9 @@ import {
   PageHeader,
   Breadcrumb,
 } from '@kajlagbe/ui';
-import { PROVIDERS, CATEGORIES, DIVISIONS } from '../../../data';
+import { PROVIDERS, CATEGORIES, DIVISIONS, Provider } from '../../../data';
 import { useLocation } from '../../../context/location-context';
+import { QuickBookingModal } from '../../../components/booking/quick-booking-modal';
 
 export default function ProvidersPage() {
   const { location, detectLiveLocation } = useLocation();
@@ -44,6 +45,8 @@ export default function ProvidersPage() {
   const [onlyNearMe, setOnlyNearMe] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<'recommended' | 'rating' | 'experience'>('recommended');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = React.useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
+  const [selectedBookingProvider, setSelectedBookingProvider] = React.useState<Provider | null>(null);
 
   const filteredProviders = PROVIDERS.filter((p) => {
     const matchesSearch =
@@ -261,15 +264,25 @@ export default function ProvidersPage() {
                     </div>
                   </CardContent>
 
-                  <CardFooter className="flex items-center justify-between pt-3 border-t border-slate-100">
+                  <CardFooter className="flex items-center justify-between pt-3 border-t border-slate-100 gap-2">
                     <div>
                       <span className="text-[10px] text-slate-400 block">শুরু</span>
                       <span className="text-sm font-black text-emerald-700">৳ {prov.startingPrice}</span>
                     </div>
                     <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        onClick={() => {
+                          setSelectedBookingProvider(prov);
+                          setIsBookingModalOpen(true);
+                        }}
+                      >
+                        ⚡ কুইক বুক
+                      </Button>
                       <Link href={`/providers/${prov.slug}`}>
                         <Button size="sm" variant="outline">
-                          প্রোফাইল দেখুন
+                          প্রোফাইল
                         </Button>
                       </Link>
                     </div>
@@ -286,6 +299,16 @@ export default function ProvidersPage() {
           )}
         </main>
       </div>
+
+      {/* Quick Booking Modal */}
+      <QuickBookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        providerName={selectedBookingProvider?.name}
+        categoryTitle={selectedBookingProvider?.category}
+        serviceTitle={selectedBookingProvider ? `${selectedBookingProvider.title} সার্ভিস` : undefined}
+        estimatedPrice={selectedBookingProvider ? `৳ ${selectedBookingProvider.startingPrice} থেকে শুরু` : undefined}
+      />
 
       {/* Mobile Drawer Filter */}
       <Drawer
